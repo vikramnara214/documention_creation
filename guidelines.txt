@@ -1,0 +1,59 @@
+Formatting Guidelines for Cornerstone Project Report  
+Students are instructed to  follow the formatting guidelines given below while preparing the 
+project report.  
+1. Page Size  
+• Paper Size: A4 
+• Orientation: Portrait  
+2. Margins  
+Use the following margins:  
+• Top: 1 inch  
+• Bottom: 1 inch  
+• Left: 1.5 inches  (for binding)  
+• Right: 1 inch  
+3. Font Style  
+The entire report should be typed using:  
+Font Name:  Times New Roman  
+4. Font Size  
+Content  Font Size  Style  
+Chapter Titles (CHAPTER 1, 
+CHAPTER 2 etc.)  16 Bold, UPPERCASE  
+Main Headings (1.1, 2.1 etc.)  14 Bold  
+Sub Headings (1.1.1 etc.)  12 Bold  
+Normal Text  12 Regular  
+Table Headings  12 Bold  
+Figure Captions  11 Italic  
+ 
+5. Line Spacing  
+• Normal text:  1.5 line spacing  
+• Headings:  single spacing  
+• Between paragraphs:  leave one line space  
+ 
+6. Text Alignment  
+• Normal text should be Justified . 
+• Chapter headings should be center aligned . 
+• Section headings should be left aligned . 
+7. Paragraph Formatting  
+• First line indentation: 0.5 inch  
+• Paragraph spacing: 6 pt after paragraph  
+8. Chapter Format  
+Each chapter should start on a new page . 
+Example format:  
+1. INTRODUCTION  
+1.1 Introduction  
+1.2 Problem Statement  
+1.3 Objectives of the Project  
+1.4 Scope of the Project  
+9. Page Numbering  
+• Page numbers should be placed at the bottom center  of the page.  
+• Preliminary pages (Abstract, Table of Contents etc.) can use Roman numbers  (i, ii, iii).  
+• Main chapters should use Arabic numbers  (1, 2, 3…).  
+10. Tables Formatting  
+• Tables should be center aligned . 
+• Each table must have a table number and title . 
+Example:  
+Table 4.1: Employee Table Structure  
+11. Figures / Screenshots  
+• Screenshots must be clear and readable.  
+• Each screenshot must have a caption . 
+Example:  
+Figure 7.1: Add Employee Screen  

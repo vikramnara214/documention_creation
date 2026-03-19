@@ -1,0 +1,63 @@
+ 
+Abstract  
+ 
+1. Introduction  
+1.1 Introduction  
+Provide a general introduction to the project.  
+Explain what the application does and why such a system is required.  
+1.2 Problem Statement  
+Describe the problem that exists in the current system.  
+Explain why a computerized system is needed to solve this problem . 
+1.3 Objectives of the Project  
+List the goals of the project.  
+Example objectives:  
+• To develop a desktop application using Java.  
+• To store and retrieve data using a database.  
+• To perform CRUD operations using JDBC.  
+• To provide a simple user interface.  
+1.4 Scope of the Project  
+   Explain where the system can be used and what operations it supports.  
+Example:  
+The system can be used in small organizations or institutions to manage 
+records efficiently.  
+ 
+2. System Overview  
+2.1 Existing System  
+   Explain how the work is currently done without this software.  
+Example:  
+Records are maintained manually in registers or spreadsheets.  
+ 
+2.2 Limitations of Existing System  
+   Explain the disadvantages of the existing system.  
+Example:  
+• Manual errors may occur.  
+• Data retrieval is difficult.  
+• Time consuming process.  
+ 
+2.3 Proposed System  
+   Explain the solution developed in this project.  
+Describe how the proposed system automates the tasks using Java and 
+a database.  
+2.4 Software Requirements  
+   List the software required to develop and run the application.  
+Example:  
+• Java JDK  
+• Database (MySQL / Oracle)  
+• IDE (NetBeans / VS Code)  
+• Operating System (Windows)  
+2.5 Hardware Requirements  
+Specify the minimum hardware required.  
+Example:  
+• Processor: Intel i3 or above  
+• RAM: 4 GB  
+• Hard Disk: 10 GB free space  
+• Monitor and keyboard  
+ 
+3. Technologies Used  
+3.1 Java (J2SE)  
+ Explain about Java programming language and why it is used in this project.  
+3.2 Swing  
+ Explain how Swing is used to design the graphical user interface.  
+3.3 JDBC  
+ Explain how JDBC helps connect the Java application with the database.  
+3.4 Database  
