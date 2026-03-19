@@ -200,14 +200,12 @@ export const CapstoneDocument = ({ data }) => (
     {/* ===== CHAPTER 3: TECHNOLOGIES USED ===== */}
     <Page size="A4" style={styles.page}>
       <Text style={styles.chapterTitle}>CHAPTER 3{"\n"}TECHNOLOGIES USED</Text>
-      {["tech1", "tech2", "tech3", "tech4"].map((k, i) => {
-        const techName = data[`${k}_name`];
-        const techDesc = data[`${k}_desc`];
-        if (!techName && !techDesc) return null;
+      {(data.techs || []).map((t, i) => {
+        if (!t.name && !t.desc) return null;
         return (
-          <View key={k}>
-            <Text style={styles.heading1}>3.{i + 1} {techName || `Technology ${i + 1}`}</Text>
-            <BodyText>{techDesc}</BodyText>
+          <View key={i}>
+            <Text style={styles.heading1}>3.{i + 1} {t.name || `Technology ${i + 1}`}</Text>
+            <BodyText>{t.desc}</BodyText>
           </View>
         );
       })}
@@ -238,14 +236,12 @@ export const CapstoneDocument = ({ data }) => (
     {/* ===== CHAPTER 5: SYSTEM MODULES ===== */}
     <Page size="A4" style={styles.page}>
       <Text style={styles.chapterTitle}>CHAPTER 5{"\n"}SYSTEM MODULES</Text>
-      {["mod1", "mod2", "mod3", "mod4"].map((k, i) => {
-        const modName = data[`${k}_name`];
-        const modDesc = data[`${k}_desc`];
-        if (!modName && !modDesc) return null;
+      {(data.modules || []).map((m, i) => {
+        if (!m.name && !m.desc) return null;
         return (
-          <View key={k}>
-            <Text style={styles.heading1}>Module {i + 1}: {modName}</Text>
-            <BodyText>{modDesc}</BodyText>
+          <View key={i}>
+            <Text style={styles.heading1}>Module {i + 1}: {m.name || `Module ${i + 1}`}</Text>
+            <BodyText>{m.desc}</BodyText>
           </View>
         );
       })}

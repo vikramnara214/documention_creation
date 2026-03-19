@@ -77,11 +77,35 @@ Maintain a formal, professional, and academic tone.`;
 const autoFillFromText = (text, currentData) => {
   const result = { ...currentData };
   let currentKey = null;
+
+  result.techs = [];
+  result.modules = [];
+  let currentTechIdx = -1;
+  let currentModIdx = -1;
+
   const lines = text.split("\n");
 
   lines.forEach(line => {
     const trimmed = line.trim();
     if (!trimmed) return;
+
+    // regex 3.X Name
+    const techMatch = trimmed.match(/^3\.(\d+)\s+(.+)$/i);
+    if (techMatch && !trimmed.includes("Requirements") && !trimmed.includes("overview")) {
+      currentTechIdx++;
+      result.techs.push({ name: techMatch[2].trim(), desc: "" });
+      currentKey = "tech_desc";
+      return;
+    }
+
+    // regex Module X: Name
+    const modMatch = trimmed.match(/^(?:Module\s*(\d+)|mod\s*(\d+))\s*:\s*(.+)$/i);
+    if (modMatch) {
+      currentModIdx++;
+      result.modules.push({ name: modMatch[3]?.trim() || "", desc: "" });
+      currentKey = "mod_desc";
+      return;
+    }
 
     let matchedKey = null;
     HEADERS_MAP.forEach(item => {
@@ -97,7 +121,13 @@ const autoFillFromText = (text, currentData) => {
       return; 
     }
 
-    if (currentKey) {
+    if (currentKey === "tech_desc" && currentTechIdx >= 0) {
+      result.techs[currentTechIdx].desc = result.techs[currentTechIdx].desc 
+        ? result.techs[currentTechIdx].desc + "\n" + trimmed : trimmed;
+    } else if (currentKey === "mod_desc" && currentModIdx >= 0) {
+      result.modules[currentModIdx].desc = result.modules[currentModIdx].desc 
+        ? result.modules[currentModIdx].desc + "\n" + trimmed : trimmed;
+    } else if (currentKey) {
       result[currentKey] = result[currentKey] ? result[currentKey] + "\n" + trimmed : trimmed;
     }
   });
@@ -110,7 +140,7 @@ const autoFillFromText = (text, currentData) => {
 const INIT = {
   // Cover page
   institutionName: "", projectTitle: "", guideName: "", department: "", academicYear: "",
-  students: [{ name: "", roll: "" }], // Dynamic list
+  students: [{ name: "", roll: "" }], 
 
   abstract: "",
 
@@ -121,13 +151,13 @@ const INIT = {
   ch2_existing: "", ch2_limitations: "", ch2_proposed: "", ch2_software: "", ch2_hardware: "",
 
   // Ch 3
-  tech1_name: "", tech1_desc: "", tech2_name: "", tech2_desc: "", tech3_name: "", tech3_desc: "", tech4_name: "", tech4_desc: "",
+  techs: [{ name: "", desc: "" }], // Dynamic list
 
   // Ch 4 - Database Design
   ch4_tables: "", ch4_structure: "", ch4_keys: "", ch4_relations: "", ch4_sample: "",
 
   // Ch 5 - Modules
-  mod1_name: "", mod1_desc: "", mod2_name: "", mod2_desc: "", mod3_name: "", mod3_desc: "", mod4_name: "", mod4_desc: "",
+  modules: [{ name: "", desc: "" }], // Dynamic list
 
   // Ch 6 - Implementation
   ch6_connection: "", ch6_validation: "", ch6_exception: "",
@@ -146,6 +176,12 @@ const calcProgress = (data) => {
   const filled = keys.filter((k) => {
     if (k === "students") {
       return data.students && data.students.some(s => s.name?.trim() || s.roll?.trim());
+    }
+    if (k === "techs") {
+      return data.techs && data.techs.some(t => t.name?.trim() || t.desc?.trim());
+    }
+    if (k === "modules") {
+      return data.modules && data.modules.some(m => m.name?.trim() || m.desc?.trim());
     }
     return data[k] && typeof data[k] === "string" && data[k].trim() !== "";
   }).length;
@@ -258,6 +294,50 @@ export default function App() {
     setData((prev) => ({
       ...prev,
       students: (prev.students || []).filter((_, i) => i !== idx)
+    }));
+  }, []);  const updateTech = useCallback((idx, field, val) => {
+    setData((prev) => {
+      const list = [...(prev.techs || [])];
+      list[idx] = { ...list[idx], [field]: val };
+      return { ...prev, techs: list };
+    });
+    setReady(false);
+  }, []);
+
+  const addTech = useCallback(() => {
+    setData((prev) => ({
+      ...prev,
+      techs: [...(prev.techs || []), { name: "", desc: "" }]
+    }));
+  }, []);
+
+  const removeTech = useCallback((idx) => {
+    setData((prev) => ({
+      ...prev,
+      techs: (prev.techs || []).filter((_, i) => i !== idx)
+    }));
+  }, []);
+
+  const updateModule = useCallback((idx, field, val) => {
+    setData((prev) => {
+      const list = [...(prev.modules || [])];
+      list[idx] = { ...list[idx], [field]: val };
+      return { ...prev, modules: list };
+    });
+    setReady(false);
+  }, []);
+
+  const addModule = useCallback(() => {
+    setData((prev) => ({
+      ...prev,
+      modules: [...(prev.modules || []), { name: "", desc: "" }]
+    }));
+  }, []);
+
+  const removeModule = useCallback((idx) => {
+    setData((prev) => ({
+      ...prev,
+      modules: (prev.modules || []).filter((_, i) => i !== idx)
     }));
   }, []);
 
@@ -454,15 +534,29 @@ export default function App() {
           {/* Chapter 3 */}
           <Chapter chapter={CHAPTERS[4]} open={!!open.ch3} toggle={toggle}>
             <p style={{ color: "#64748b", fontSize: "0.82rem", margin: 0 }}>
-              Add up to 4 technologies used in your project (e.g. React, Node.js, MySQL, Java…)
+              Add technologies used in your project (e.g. React, Node.js, MySQL, Java)
             </p>
-            {[1, 2, 3, 4].map((n) => (
-              <div key={n} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 14, display: "flex", flexDirection: "column", gap: 10 }}>
-                <Input label={`3.${n} Technology Name`} id={`tech${n}_name`} value={data[`tech${n}_name`]} onChange={update} placeholder={`e.g. ${["React.js","Node.js","MySQL","Java"][n-1]}`} />
-                <Field label="Description" id={`tech${n}_desc`} value={data[`tech${n}_desc`]} onChange={update} rows={3}
-                  hint="Briefly explain what it is and why it's used in your project." />
+            {(data.techs || []).map((t, idx) => (
+              <div key={idx} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 14, display: "flex", flexDirection: "column", gap: 10, position: "relative" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#a78bfa" }}>Technology {idx + 1}</span>
+                  {idx > 0 && (
+                    <button onClick={() => removeTech(idx)} style={{ background: "#ef4444", border: "none", padding: "6px", borderRadius: "4px", cursor: "pointer" }}>
+                      <Trash2 size={14} color="white" />
+                    </button>
+                  )}
+                </div>
+                <Input label="Technology Name" value={t.name} onChange={(_, v) => updateTech(idx, "name", v)} />
+                <Field label="Description" value={t.desc} onChange={(_, v) => updateTech(idx, "desc", v)} rows={3} hint="Explain what it is and why it was used." />
               </div>
             ))}
+            <button 
+              className="btn-primary" 
+              style={{ alignSelf: "start", marginTop: 5, padding: "6px 12px", fontSize: "0.8rem", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+              onClick={addTech}
+            >
+              + Add Technology
+            </button>
           </Chapter>
 
           {/* Chapter 4 - Database Design */}
@@ -476,13 +570,28 @@ export default function App() {
 
           {/* Chapter 5 - System Modules */}
           <Chapter chapter={CHAPTERS[6]} open={!!open.ch5} toggle={toggle}>
-            <p style={{ color: "#64748b", fontSize: "0.82rem", margin: 0 }}>List major functional modules (e.g., Add, Search).</p>
-            {[1, 2, 3, 4].map((n) => (
-              <div key={n} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
-                <Input label={`Module ${n} Name`} id={`mod${n}_name`} value={data[`mod${n}_name`]} onChange={update} placeholder={`e.g. Add Record`} />
-                <Field label="Description" id={`mod${n}_desc`} value={data[`mod${n}_desc`]} onChange={update} rows={2} />
+            <p style={{ color: "#64748b", fontSize: "0.82rem", margin: 0 }}>List major functional modules (e.g., Add, Search, Update).</p>
+            {(data.modules || []).map((m, idx) => (
+              <div key={idx} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 12, display: "flex", flexDirection: "column", gap: 10, position: "relative" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#34d399" }}>Module {idx + 1}</span>
+                  {idx > 0 && (
+                    <button onClick={() => removeModule(idx)} style={{ background: "#ef4444", border: "none", padding: "6px", borderRadius: "4px", cursor: "pointer" }}>
+                      <Trash2 size={14} color="white" />
+                    </button>
+                  )}
+                </div>
+                <Input label="Module Name" value={m.name} onChange={(_, v) => updateModule(idx, "name", v)} />
+                <Field label="Description" value={m.desc} onChange={(_, v) => updateModule(idx, "desc", v)} rows={2} />
               </div>
             ))}
+            <button 
+              className="btn-primary" 
+              style={{ alignSelf: "start", marginTop: 5, padding: "6px 12px", fontSize: "0.8rem", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+              onClick={addModule}
+            >
+              + Add Module
+            </button>
           </Chapter>
 
           {/* Chapter 6 - Implementation */}
