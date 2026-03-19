@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import { CapstoneDocument } from "./pdfTemplate";
 import {
   ChevronDown, ChevronRight, Download, FileText,
@@ -176,171 +176,145 @@ export default function App() {
   const filename = `${(data.projectTitle || "capstone_report").replace(/\s+/g, "_")}.pdf`;
 
   return (
-    <div style={{ position: "relative", minHeight: "100vh" }}>
-      {/* Background blobs */}
-      <div className="blob" style={{ width: 600, height: 600, background: "#6366f1", top: -100, left: -200 }} />
-      <div className="blob" style={{ width: 400, height: 400, background: "#8b5cf6", bottom: 0, right: -100, animationDelay: "6s" }} />
-
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 860, margin: "0 auto", padding: "40px 20px 80px" }}>
-
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-            <Sparkles size={20} color="#6366f1" />
-            <span style={{ fontSize: "0.8rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6366f1" }}>
-              Capstone Documentation Generator
-            </span>
+    <div style={{ display: "grid", gridTemplateColumns: "440px 1fr", height: "100vh", overflow: "hidden" }}>
+      {/* ─── Left Sidebar (Controls) ─── */}
+      <div style={{ 
+        display: "flex", flexDirection: "column", 
+        background: "#ffffff", borderRight: "1px solid #e2e8f0", 
+        padding: "20px", height: "100vh", overflow: "hidden" 
+      }}>
+        
+        {/* Sidebar Header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, paddingBottom: 16, borderBottom: "1px solid #f1f5f9", marginBottom: 16 }}>
+          <div style={{ background: "#2563eb", padding: "6px", borderRadius: "8px" }}>
+            <Sparkles size={18} color="white" />
           </div>
-          <h1 style={{ margin: 0, fontSize: "2.4rem", fontWeight: 700, lineHeight: 1.15 }}>
-            Fill in your content,<br />
-            <span style={{ background: "linear-gradient(90deg,#6366f1,#a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              download the PDF.
-            </span>
-          </h1>
-          <p style={{ color: "#64748b", marginTop: 14, fontSize: "0.95rem" }}>
-            Follows the official Cornerstone Project formatting guidelines — Times New Roman, A4, correct margins &amp; headings.
-          </p>
+          <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>Capstone Doc Generator</span>
         </div>
 
         {/* Progress */}
-        <div className="glass" style={{ padding: "18px 24px", marginBottom: 28, display: "flex", alignItems: "center", gap: 16 }}>
-          <span style={{ fontSize: "0.82rem", color: "#94a3b8", whiteSpace: "nowrap" }}>Completion</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #e2e8f0", marginBottom: 16 }}>
+          <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#64748b" }}>Progress</span>
           <div className="progress-bar" style={{ flex: 1 }}>
             <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
           </div>
-          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#a78bfa", minWidth: 38 }}>{progress}%</span>
+          <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#2563eb" }}>{progress}%</span>
         </div>
 
-        {/* Cover Metadata */}
-        <div className="glass" style={{ padding: "24px", marginBottom: 24 }}>
-          <div style={{ fontWeight: 600, marginBottom: 16, color: "#a78bfa" }}>Cover Page & Metadata</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-            <Input label="Institution Name" value={data.institutionName} onChange={(_, v) => update("institutionName", v)} />
-            <Input label="Department" value={data.department} onChange={(_, v) => update("department", v)} />
-            <Input label="Project Title" value={data.projectTitle} onChange={(_, v) => update("projectTitle", v)} />
-            <Input label="Guide / Supervisor Name" value={data.guideName} onChange={(_, v) => update("guideName", v)} />
-            <Input label="Academic Year" value={data.academicYear} onChange={(_, v) => update("academicYear", v)} placeholder="e.g. 2024–2025" />
-          </div>
+        {/* Scrollable inputs list area */}
+        <div className="sidebar-scroll" style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
           
-          <div style={{ marginTop: 20 }}>
-            <div style={{ fontWeight: 600, fontSize: "0.85rem", color: "#94a3b8", marginBottom: 10 }}>Students</div>
-            {(data.students || []).map((st, idx) => (
-              <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, alignItems: "end", marginBottom: 8 }}>
-                <Input label={`Student ${idx + 1} Name`} value={st.name} onChange={(_, v) => updateStudent(idx, "name", v)} />
-                <Input label="Roll Number" value={st.roll} onChange={(_, v) => updateStudent(idx, "roll", v)} />
-                {idx > 0 && (
-                  <button onClick={() => removeStudent(idx)} style={{ background: "#ef4444", border: "none", padding: "10px", borderRadius: "6px", cursor: "pointer" }}>
-                    <Trash2 size={16} color="white" />
-                  </button>
-                )}
-              </div>
-            ))}
-            <button className="btn-primary" style={{ alignSelf: "start", padding: "6px 12px", fontSize: "0.8rem", background: "rgba(255,255,255,0.1)" }} onClick={addStudent}>+ Add Student</button>
-          </div>
-        </div>
-
-        {/* --- Block Canvas Workspace --- */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ fontWeight: 600, letterSpacing: "0.05em", color: "#e2e8f0", fontSize: "0.9rem", marginBottom: 4 }}>Document Report Workflow</div>
-          {(data.blocks || []).map((b, bIdx) => (
-            <div key={b.id} className="glass" style={{ padding: "16px", position: "relative", borderLeft: b.type === 'chapter' ? '4px solid #ef4444' : '1px solid rgba(255,255,255,0.1)' }}>
-              {/* Block Header Toolbar */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: b.type === 'chapter' ? '#f87171' : b.type==='image' ? '#34d399' : '#818cf8', textTransform: "uppercase" }}>
-                  {b.type}
-                </span>
-                <div style={{ display: "flex", gap: 6 }}>
-                  <button onClick={() => moveBlock(bIdx, -1)} disabled={bIdx === 0} style={{ opacity: bIdx === 0 ? 0.3 : 1, padding: "4px 8px", background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 4, cursor: "pointer" }}>↑</button>
-                  <button onClick={() => moveBlock(bIdx, 1)} disabled={bIdx === (data.blocks.length - 1)} style={{ opacity: bIdx === (data.blocks.length - 1) ? 0.3 : 1, padding: "4px 8px", background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 4, cursor: "pointer" }}>↓</button>
-                  <button onClick={() => removeBlock(b.id)} style={{ color: "#f87171", padding: "4px 8px", background: "rgba(239, 68, 68, 0.1)", border: "none", borderRadius: 4, cursor: "pointer" }}><Trash2 size={14} /></button>
+          {/* Cover Metadata */}
+          <div className="glass" style={{ padding: "16px" }}>
+            <div style={{ fontWeight: 600, marginBottom: 12, color: "#1e293b", fontSize: "0.88rem" }}>Cover Page & Metadata</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10 }}>
+              <Input label="Institution Name" value={data.institutionName} onChange={(_, v) => update("institutionName", v)} />
+              <Input label="Department" value={data.department} onChange={(_, v) => update("department", v)} />
+              <Input label="Project Title" value={data.projectTitle} onChange={(_, v) => update("projectTitle", v)} />
+              <Input label="Guide / Supervisor Name" value={data.guideName} onChange={(_, v) => update("guideName", v)} />
+              <Input label="Academic Year" value={data.academicYear} onChange={(_, v) => update("academicYear", v)} placeholder="2024–2025" />
+            </div>
+            
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontWeight: 600, fontSize: "0.78rem", color: "#64748b", marginBottom: 8 }}>Students</div>
+              {(data.students || []).map((st, idx) => (
+                <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8, alignItems: "end", marginBottom: 6 }}>
+                  <Input label={`Student ${idx + 1}`} value={st.name} onChange={(_, v) => updateStudent(idx, "name", v)} />
+                  <Input label="Roll No" value={st.roll} onChange={(_, v) => updateStudent(idx, "roll", v)} />
+                  {idx > 0 && (
+                    <button onClick={() => removeStudent(idx)} style={{ background: "#fee2e2", color: "#ef4444", border: "none", padding: "8px", borderRadius: "6px", cursor: "pointer" }}>
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
-              </div>
+              ))}
+              <button 
+                className="btn-primary" 
+                style={{ padding: "6px 10px", fontSize: "0.78rem", background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0", marginTop: 4, width: "auto" }} 
+                onClick={addStudent}
+              >
+                + Student
+              </button>
+            </div>
+          </div>
 
-              {/* Block Content Inputs */}
-              {(b.type === "chapter" || b.type === "heading1" || b.type === "heading2") && (
-                <input 
-                  className="field-input" 
-                  style={{ fontWeight: b.type === 'chapter' ? 700 : 600, fontSize: b.type === 'chapter' ? '1.05rem' : '0.98rem', marginBottom: 8 }}
-                  value={b.title} 
-                  onChange={(e) => updateBlock(b.id, "title", e.target.value)} 
-                  placeholder={b.type === "chapter" ? "e.g. ABSTRACT or CHAPTER 1" : "e.g. 1.1 Introduction"} 
-                />
-              )}
+          {/* Canvas Blocks Layout sequential list */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ fontWeight: 600, color: "#475569", fontSize: "0.82rem" }}>Sections Canvas</div>
+            {(data.blocks || []).map((b, bIdx) => (
+              <div key={b.id} className="glass" style={{ padding: "12px", borderLeft: b.type === 'chapter' ? '3px solid #ef4444' : '1px solid var(--border)' }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <span style={{ fontSize: "0.68rem", fontWeight: 700, color: b.type === 'chapter' ? '#dc2626' : b.type==='image' ? '#059669' : '#2563eb', textTransform: "uppercase" }}>
+                    {b.type}
+                  </span>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    <button onClick={() => moveBlock(bIdx, -1)} disabled={bIdx === 0} style={{ opacity: bIdx === 0 ? 0.3 : 1, padding: "2px 6px", background: "#f1f5f9", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.75rem" }}>↑</button>
+                    <button onClick={() => moveBlock(bIdx, 1)} disabled={bIdx === (data.blocks.length - 1)} style={{ opacity: bIdx === (data.blocks.length - 1) ? 0.3 : 1, padding: "2px 6px", background: "#f1f5f9", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.75rem" }}>↓</button>
+                    <button onClick={() => removeBlock(b.id)} style={{ color: "#ef4444", padding: "4px", background: "#fee2e2", border: "none", borderRadius: 4, cursor: "pointer" }}><Trash2 size={12} /></button>
+                  </div>
+                </div>
 
-              {(b.type === "paragraph" || b.type === "list" || b.type === "chapter" || b.type === "heading1" || b.type === "heading2") && (
-                <textarea 
-                  className="field-input" 
-                  rows={b.type === "paragraph" ? 4 : 2}
-                  value={b.content} 
-                  onChange={(e) => updateBlock(b.id, "content", e.target.value)} 
-                  placeholder={b.type === "list" ? "Point 1\nPoint 2\nPoint 3..." : "Type text content here..."} 
-                />
-              )}
-
-              {b.type === "image" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {/* Block Content inputs */}
+                {(b.type === "chapter" || b.type === "heading1" || b.type === "heading2") && (
                   <input 
-                    type="file" 
-                    accept="image/*" 
-                    style={{ fontSize: "0.82rem", color: "#94a3b8" }}
-                    onChange={(e) => {
+                    className="field-input" 
+                    style={{ fontWeight: b.type === 'chapter' ? 700 : 600, fontSize: "0.85rem", padding: "6px 8px", marginBottom: 6 }}
+                    value={b.title} 
+                    onChange={(e) => updateBlock(b.id, "title", e.target.value)} 
+                    placeholder={b.type === "chapter" ? "e.g. ABSTRACT or CHAPTER 1" : "e.g. 1.1 Introduction"} 
+                  />
+                )}
+
+                {(b.type === "paragraph" || b.type === "list" || b.type === "chapter" || b.type === "heading1" || b.type === "heading2") && (
+                  <textarea 
+                    className="field-input" 
+                    rows={b.type === "paragraph" ? 4 : 2}
+                    style={{ fontSize: "0.82rem", padding: "6px 8px" }}
+                    value={b.content} 
+                    onChange={(e) => updateBlock(b.id, "content", e.target.value)} 
+                    placeholder={b.type === "list" ? "Point 1\nPoint 2\nPoint 3..." : "Type text content..."} 
+                  />
+                )}
+
+                {b.type === "image" && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <input type="file" accept="image/*" style={{ fontSize: "0.75rem" }} onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
                         const reader = new FileReader();
                         reader.onloadend = () => updateBlock(b.id, "src", reader.result);
                         reader.readAsDataURL(file);
                       }
-                    }} 
-                  />
-                  {b.src && <img src={b.src} style={{ maxHeight: "140px", width: "fit-content", borderRadius: 8, marginTop: 4, alignSelf: "center" }} alt="Preview" />}
-                  <input 
-                    className="field-input" 
-                    value={b.title} 
-                    onChange={(e) => updateBlock(b.id, "title", e.target.value)} 
-                    placeholder="Figure Description (e.g. Fig 4.1 Login Screen Dialog)" 
-                  />
-                </div>
-              )}
-            </div>
-          ))}
+                    }} />
+                    {b.src && <img src={b.src} style={{ maxHeight: "100px", width: "fit-content", borderRadius: 6, margin: "4px auto" }} />}
+                    <input className="field-input" style={{ fontSize: "0.82rem", padding: "6px 8px" }} value={b.title} onChange={(e) => updateBlock(b.id, "title", e.target.value)} placeholder="Figure Caption" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
         </div>
 
-        {/* --- Toolbar Footer --- */}
-        <div style={{ padding: "16px", background: "rgba(0,0,0,0.3)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, marginTop: 24, display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", position: "sticky", bottom: 20, zIndex: 10 }}>
-          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "none", border: "1px solid #ef4444", color: "#fff" }} onClick={() => addBlock("chapter")}>+ Chapter</button>
-          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "none", border: "1px solid #818cf8" }} onClick={() => addBlock("heading1")}>+ H1</button>
-          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "none", border: "1px solid #818cf8" }} onClick={() => addBlock("heading2")}>+ H2</button>
-          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "none", border: "1px solid rgba(255,255,255,0.2)" }} onClick={() => addBlock("paragraph")}>+ Paragraph</button>
-          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "none", border: "1px solid rgba(255,255,255,0.2)" }} onClick={() => addBlock("list")}>+ Bullet List</button>
-          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "linear-gradient(135deg,#10b981,#059669)" }} onClick={() => addBlock("image")}>+ Photo / Fig</button>
+        {/* Sidebar Footer Toolbar absolute stick */}
+        <div style={{ padding: "12px", borderTop: "1px solid #e2e8f0", marginTop: "auto", display: "flex", flexWrap: "wrap", gap: 6, justifyContent: "center", background: "#ffffff", borderRadius: "0 0 12px 12px" }}>
+          <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#fee2e2", color: "#dc2626", border: "1px solid #fecaca" }} onClick={() => addBlock("chapter")}>+ Chapter</button>
+          <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#dbeafe", color: "#2563eb", border: "1px solid #bfdbfe" }} onClick={() => addBlock("heading1")}>+ H1</button>
+          <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#dbeafe", color: "#2563eb", border: "1px solid #bfdbfe" }} onClick={() => addBlock("heading2")}>+ H2</button>
+          <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }} onClick={() => addBlock("paragraph")}>+ Text</button>
+          <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }} onClick={() => addBlock("list")}>+ List</button>
+          <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#d1fae5", color: "#059669", border: "1px solid #a7f3d0" }} onClick={() => addBlock("image")}>+ Photo</button>
         </div>
 
-        {/* Download Button */}
-        <div style={{ marginTop: 48, display: "flex", justifyContent: "center" }}>
-          <PDFDownloadLink
-            document={<CapstoneDocument data={data} />}
-            fileName={`${(data.projectTitle || "capstone_report").replace(/\s+/g, "_")}.pdf`}
-            style={{ textDecoration: "none" }}
-          >
-            {({ loading, error }) => (
-              <button className="btn-primary" style={{ fontSize: "1rem", padding: "16px 40px" }}>
-                {loading
-                  ? "Generating PDF…"
-                  : error
-                  ? "Error framing canvas"
-                  : <><Download size={18} /> Download pdf</>}
-              </button>
-            )}
-          </PDFDownloadLink>
-        </div>
-        <p style={{ textAlign: "center", color: "#475569", fontSize: "0.78rem", marginTop: 12 }}>
-          PDF is compiled frame-by-frame entirely on node clusters. No data leaves your space.
-        </p>
       </div>
 
-      <style>{`
-        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-      `}</style>
+      {/* ─── Right Pane (Live PDF Preview) ─── */}
+      <div style={{ flex: 1, background: "#cbd5e1", padding: "16px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <PDFViewer style={{ width: "100%", height: "100%", border: "none", borderRadius: "6px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)" }}>
+          <CapstoneDocument data={data} />
+        </PDFViewer>
+      </div>
+
     </div>
   );
 }
