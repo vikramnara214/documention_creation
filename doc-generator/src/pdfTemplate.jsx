@@ -210,65 +210,94 @@ export const CapstoneDocument = ({ data }) => (
       <Text style={styles.pageNumber} render={({ pageNumber }) => pageNumber - 1} fixed />
     </Page>
 
-    {/* ===== CHAPTER 4: SYSTEM DESIGN ===== */}
+    {/* ===== CHAPTER 4: DATABASE DESIGN ===== */}
     <Page size="A4" style={styles.page}>
-      <Text style={styles.chapterTitle}>CHAPTER 4{"\n"}SYSTEM DESIGN</Text>
-      <Text style={styles.heading1}>4.1 System Architecture</Text>
-      <BodyText>{data.ch4_architecture}</BodyText>
+      <Text style={styles.chapterTitle}>CHAPTER 4{"\n"}DATABASE DESIGN</Text>
+      <Text style={styles.heading1}>4.1 Database Tables</Text>
+      <BodyText>{data.ch4_tables}</BodyText>
 
-      <Text style={styles.heading1}>4.2 Database Design</Text>
-      <BodyText>{data.ch4_database}</BodyText>
+      <Text style={styles.heading1}>4.2 Table Structure</Text>
+      <BodyText>{data.ch4_structure}</BodyText>
 
-      <Text style={styles.heading1}>4.3 Module Description</Text>
-      <BodyText>{data.ch4_modules}</BodyText>
+      <Text style={styles.heading1}>4.3 Keys and Constraints</Text>
+      <BulletList items={data.ch4_keys} />
+
+      <Text style={styles.heading1}>4.4 Table Relationships</Text>
+      <BodyText>{data.ch4_relations}</BodyText>
+
+      <Text style={styles.heading1}>4.5 Sample Data / Records</Text>
+      <BodyText>{data.ch4_sample}</BodyText>
 
       <Text style={styles.pageNumber} render={({ pageNumber }) => pageNumber - 1} fixed />
     </Page>
 
-    {/* ===== CHAPTER 5: IMPLEMENTATION ===== */}
+    {/* ===== CHAPTER 5: SYSTEM MODULES ===== */}
     <Page size="A4" style={styles.page}>
-      <Text style={styles.chapterTitle}>CHAPTER 5{"\n"}IMPLEMENTATION</Text>
-      <Text style={styles.heading1}>5.1 Implementation Overview</Text>
-      <BodyText>{data.ch5_overview}</BodyText>
+      <Text style={styles.chapterTitle}>CHAPTER 5{"\n"}SYSTEM MODULES</Text>
+      {["mod1", "mod2", "mod3", "mod4"].map((k, i) => {
+        const modName = data[`${k}_name`];
+        const modDesc = data[`${k}_desc`];
+        if (!modName && !modDesc) return null;
+        return (
+          <View key={k}>
+            <Text style={styles.heading1}>Module {i + 1}: {modName}</Text>
+            <BodyText>{modDesc}</BodyText>
+          </View>
+        );
+      })}
+      <Text style={styles.pageNumber} render={({ pageNumber }) => pageNumber - 1} fixed />
+    </Page>
 
-      <Text style={styles.heading1}>5.2 Key Modules</Text>
-      <BodyText>{data.ch5_modules}</BodyText>
+    {/* ===== CHAPTER 6: IMPLEMENTATION ===== */}
+    <Page size="A4" style={styles.page}>
+      <Text style={styles.chapterTitle}>CHAPTER 6{"\n"}IMPLEMENTATION</Text>
+      <Text style={styles.heading1}>6.1 Database Connection</Text>
+      <BodyText>{data.ch6_connection}</BodyText>
+
+      <Text style={styles.heading1}>6.2 Input Validation</Text>
+      <BodyText>{data.ch6_validation}</BodyText>
+
+      <Text style={styles.heading1}>6.3 Exception Handling</Text>
+      <BodyText>{data.ch6_exception}</BodyText>
 
       <Text style={styles.pageNumber} render={({ pageNumber }) => pageNumber - 1} fixed />
     </Page>
 
-    {/* ===== CHAPTER 6: TESTING ===== */}
+    {/* ===== CHAPTER 7: OUTPUT SCREENS ===== */}
     <Page size="A4" style={styles.page}>
-      <Text style={styles.chapterTitle}>CHAPTER 6{"\n"}TESTING</Text>
-      <Text style={styles.heading1}>6.1 Testing Strategy</Text>
-      <BodyText>{data.ch6_strategy}</BodyText>
-
-      <Text style={styles.heading1}>6.2 Test Cases</Text>
-      <BodyText>{data.ch6_cases}</BodyText>
-
-      <Text style={styles.heading1}>6.3 Test Results</Text>
-      <BodyText>{data.ch6_results}</BodyText>
-
+      <Text style={styles.chapterTitle}>CHAPTER 7{"\n"}OUTPUT SCREENS</Text>
+      <BodyText>{data.ch7_screens}</BodyText>
+      <Text style={[styles.body, { color: "#666", fontSize: 10 }]}>Note: Insert screenshots after printing if using standard generator.</Text>
       <Text style={styles.pageNumber} render={({ pageNumber }) => pageNumber - 1} fixed />
     </Page>
 
-    {/* ===== CHAPTER 7: CONCLUSION ===== */}
+    {/* ===== CHAPTER 8: CONCLUSION ===== */}
     <Page size="A4" style={styles.page}>
-      <Text style={styles.chapterTitle}>CHAPTER 7{"\n"}CONCLUSION</Text>
-      <Text style={styles.heading1}>7.1 Conclusion</Text>
-      <BodyText>{data.ch7_conclusion}</BodyText>
-
-      <Text style={styles.heading1}>7.2 Future Scope</Text>
-      <BodyText>{data.ch7_future}</BodyText>
-
+      <Text style={styles.chapterTitle}>CHAPTER 8{"\n"}CONCLUSION</Text>
+      <BodyText>{data.ch8_conclusion}</BodyText>
       <Text style={styles.pageNumber} render={({ pageNumber }) => pageNumber - 1} fixed />
     </Page>
 
-    {/* ===== REFERENCES ===== */}
+    {/* ===== CHAPTER 9: FUTURE ENHANCEMENTS ===== */}
     <Page size="A4" style={styles.page}>
-      <Text style={styles.chapterTitle}>REFERENCES</Text>
+      <Text style={styles.chapterTitle}>CHAPTER 9{"\n"}FUTURE ENHANCEMENTS</Text>
+      <BulletList items={data.ch9_future} />
+      <Text style={styles.pageNumber} render={({ pageNumber }) => pageNumber - 1} fixed />
+    </Page>
+
+    {/* ===== CHAPTER 10: REFERENCES ===== */}
+    <Page size="A4" style={styles.page}>
+      <Text style={styles.chapterTitle}>CHAPTER 10{"\n"}REFERENCES</Text>
       <BulletList items={data.references} />
+      <Text style={styles.pageNumber} render={({ pageNumber }) => pageNumber - 1} fixed />
+    </Page>
+
+    {/* ===== APPENDIX ===== */}
+    <Page size="A4" style={styles.page}>
+      <Text style={styles.chapterTitle}>APPENDIX</Text>
+      <BodyText>{data.appendix}</BodyText>
       <Text style={styles.pageNumber} render={({ pageNumber }) => pageNumber - 1} fixed />
     </Page>
   </Document>
 );
+

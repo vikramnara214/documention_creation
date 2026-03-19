@@ -24,9 +24,28 @@ Please generate detailed, academic, and structured content for the following sec
    - 1.3 Objectives: Bullet points of goals.
    - 1.4 Scope: Application areas.
 3. **Chapter 2 – System Overview**:
-   - 2.1 Existing System: How it works now.
-   - 2.2 Limitations: Bullet points of issues.
-   - 2.3 Proposed System: Solution description.
+   - 2.1 Existing System.
+   - 2.2 Limitations.
+   - 2.3 Proposed System.
+   - 2.4 Software Requirements.
+   - 2.5 Hardware Requirements.
+4. **Chapter 3 – Technologies Used**:
+   - List 3-4 technologies with short explanations of use.
+5. **Chapter 4 – Database Design**:
+   - 4.1 Database Tables.
+   - 4.2 Table Structure (specify fields for tables).
+   - 4.3 Keys and Constraints.
+   - 4.4 Table Relationships.
+   - 4.5 Sample Data.
+6. **Chapter 5 – System Modules**:
+   - Describe 3-4 major functional modules (e.g., Add, Search).
+7. **Chapter 6 – Implementation**:
+   - 6.1 Database Connection.
+   - 6.2 Input Validation.
+   - 6.3 Exception Handling.
+8. **Chapter 7 – Output Screens**:
+   - General summary describing UI screen items required.
+9. **Chapter 8 – Conclusion & Chapter 9 – Future Enhancements**.
 
 Maintain a formal, professional, and academic tone.`;
 };
@@ -34,56 +53,34 @@ Maintain a formal, professional, and academic tone.`;
 // ─── Initial form state matching all PDF fields ───────────────────────────────
 const INIT = {
   // Cover page
-  institutionName: "",
-  projectTitle: "",
-  studentName: "",
-  rollNumber: "",
-  guideName: "",
-  department: "",
-  academicYear: "",
+  institutionName: "", projectTitle: "", studentName: "", rollNumber: "", guideName: "", department: "", academicYear: "",
 
-  // Abstract
   abstract: "",
 
-  // Chapter 1 – Introduction
-  ch1_intro: "",
-  ch1_problem: "",
-  ch1_objectives: "",
-  ch1_scope: "",
+  // Ch 1
+  ch1_intro: "", ch1_problem: "", ch1_objectives: "", ch1_scope: "",
 
-  // Chapter 2 – System Overview
-  ch2_existing: "",
-  ch2_limitations: "",
-  ch2_proposed: "",
-  ch2_software: "",
-  ch2_hardware: "",
+  // Ch 2
+  ch2_existing: "", ch2_limitations: "", ch2_proposed: "", ch2_software: "", ch2_hardware: "",
 
-  // Chapter 3 – Technologies
-  tech1_name: "", tech1_desc: "",
-  tech2_name: "", tech2_desc: "",
-  tech3_name: "", tech3_desc: "",
-  tech4_name: "", tech4_desc: "",
+  // Ch 3
+  tech1_name: "", tech1_desc: "", tech2_name: "", tech2_desc: "", tech3_name: "", tech3_desc: "", tech4_name: "", tech4_desc: "",
 
-  // Chapter 4 – System Design
-  ch4_architecture: "",
-  ch4_database: "",
-  ch4_modules: "",
+  // Ch 4 - Database Design
+  ch4_tables: "", ch4_structure: "", ch4_keys: "", ch4_relations: "", ch4_sample: "",
 
-  // Chapter 5 – Implementation
-  ch5_overview: "",
-  ch5_modules: "",
+  // Ch 5 - Modules
+  mod1_name: "", mod1_desc: "", mod2_name: "", mod2_desc: "", mod3_name: "", mod3_desc: "", mod4_name: "", mod4_desc: "",
 
-  // Chapter 6 – Testing
-  ch6_strategy: "",
-  ch6_cases: "",
-  ch6_results: "",
+  // Ch 6 - Implementation
+  ch6_connection: "", ch6_validation: "", ch6_exception: "",
 
-  // Chapter 7 – Conclusion
-  ch7_conclusion: "",
-  ch7_future: "",
+  ch7_screens: "",
+  ch8_conclusion: "",
+  ch9_future: "",
 
-  // References
   references: "",
+  appendix: "",
 };
 
 // ─── Progress helper ──────────────────────────────────────────────────────────
@@ -95,17 +92,21 @@ const calcProgress = (data) => {
 
 // ─── Chapter section IDs ─────────────────────────────────────────────────────
 const CHAPTERS = [
-  { id: "cover",  icon: BookOpen,       label: "Cover Page",       num: null },
-  { id: "abs",    icon: FileText,       label: "Abstract",         num: null },
-  { id: "ch1",    icon: BookOpen,       label: "Chapter 1 – Introduction",  num: "1" },
-  { id: "ch2",    icon: LayoutDashboard,label: "Chapter 2 – System Overview", num: "2" },
-  { id: "ch3",    icon: Cpu,            label: "Chapter 3 – Technologies Used", num: "3" },
-  { id: "ch4",    icon: LayoutDashboard,label: "Chapter 4 – System Design", num: "4" },
-  { id: "ch5",    icon: Code2,          label: "Chapter 5 – Implementation", num: "5" },
-  { id: "ch6",    icon: FlaskConical,   label: "Chapter 6 – Testing",       num: "6" },
-  { id: "ch7",    icon: CheckSquare,    label: "Chapter 7 – Conclusion",    num: "7" },
-  { id: "refs",   icon: Link,           label: "References",       num: null },
+  { id: "cover",  icon: BookOpen,       label: "Cover Page" },
+  { id: "abs",    icon: FileText,       label: "Abstract" },
+  { id: "ch1",    icon: BookOpen,       label: "Chapter 1 – Introduction" },
+  { id: "ch2",    icon: LayoutDashboard,label: "Chapter 2 – System Overview" },
+  { id: "ch3",    icon: Cpu,            label: "Chapter 3 – Technologies Used" },
+  { id: "ch4",    icon: LayoutDashboard,label: "Chapter 4 – Database Design" },
+  { id: "ch5",    icon: Code2,          label: "Chapter 5 – System Modules" },
+  { id: "ch6",    icon: Code2,          label: "Chapter 6 – Implementation" },
+  { id: "ch7",    icon: LayoutDashboard,label: "Chapter 7 – Output Screens" },
+  { id: "ch8",    icon: CheckSquare,    label: "Chapter 8 – Conclusion" },
+  { id: "ch9",    icon: Plus,           label: "Chapter 9 – Future Enhancements" },
+  { id: "refs",   icon: Link,           label: "References" },
+  { id: "appx",   icon: Plus,           label: "Appendix" },
 ];
+
 
 // ─── Reusable field helpers ───────────────────────────────────────────────────
 const Field = ({ label, id, value, onChange, rows = 3, hint }) => (
@@ -322,47 +323,58 @@ export default function App() {
             ))}
           </Chapter>
 
-          {/* Chapter 4 */}
+          {/* Chapter 4 - Database Design */}
           <Chapter chapter={CHAPTERS[5]} open={!!open.ch4} toggle={toggle}>
-            <Field label="4.1 System Architecture" id="ch4_architecture" value={data.ch4_architecture} onChange={update} rows={5}
-              hint="Describe the overall architecture — client-server, MVC, layered etc." />
-            <Field label="4.2 Database Design" id="ch4_database" value={data.ch4_database} onChange={update} rows={5}
-              hint="Describe the database schema, tables, and relationships." />
-            <Field label="4.3 Module Description" id="ch4_modules" value={data.ch4_modules} onChange={update} rows={5}
-              hint="Describe the main modules and how they interact." />
+            <Field label="4.1 Database Tables" id="ch4_tables" value={data.ch4_tables} onChange={update} rows={3} hint="List all tables used in the project." />
+            <Field label="4.2 Table Structure" id="ch4_structure" value={data.ch4_structure} onChange={update} rows={4} hint="Explain columns and data types." />
+            <Field label="4.3 Keys and Constraints" id="ch4_keys" value={data.ch4_keys} onChange={update} rows={3} hint="Explain primary keys, unique fields, etc." />
+            <Field label="4.4 Table Relationships" id="ch4_relations" value={data.ch4_relations} onChange={update} rows={3} hint="Explain how tables are connected." />
+            <Field label="4.5 Sample Data / Records" id="ch4_sample" value={data.ch4_sample} onChange={update} rows={3} hint="Show sample rows/records." />
           </Chapter>
 
-          {/* Chapter 5 */}
+          {/* Chapter 5 - System Modules */}
           <Chapter chapter={CHAPTERS[6]} open={!!open.ch5} toggle={toggle}>
-            <Field label="5.1 Implementation Overview" id="ch5_overview" value={data.ch5_overview} onChange={update} rows={5}
-              hint="Describe how the system was built — languages, frameworks, tools." />
-            <Field label="5.2 Key Modules" id="ch5_modules" value={data.ch5_modules} onChange={update} rows={5}
-              hint="Describe how each key module was implemented." />
+            <p style={{ color: "#64748b", fontSize: "0.82rem", margin: 0 }}>List major functional modules (e.g., Add, Search).</p>
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+                <Input label={`Module ${n} Name`} id={`mod${n}_name`} value={data[`mod${n}_name`]} onChange={update} placeholder={`e.g. Add Record`} />
+                <Field label="Description" id={`mod${n}_desc`} value={data[`mod${n}_desc`]} onChange={update} rows={2} />
+              </div>
+            ))}
           </Chapter>
 
-          {/* Chapter 6 */}
+          {/* Chapter 6 - Implementation */}
           <Chapter chapter={CHAPTERS[7]} open={!!open.ch6} toggle={toggle}>
-            <Field label="6.1 Testing Strategy" id="ch6_strategy" value={data.ch6_strategy} onChange={update} rows={4}
-              hint="Explain the types of testing performed (unit, integration, user acceptance etc.)." />
-            <Field label="6.2 Test Cases" id="ch6_cases" value={data.ch6_cases} onChange={update} rows={5}
-              hint="Describe the test cases executed." />
-            <Field label="6.3 Test Results" id="ch6_results" value={data.ch6_results} onChange={update} rows={4}
-              hint="Summarize the test outcomes." />
+            <Field label="6.1 Database Connection" id="ch6_connection" value={data.ch6_connection} onChange={update} rows={3} />
+            <Field label="6.2 Input Validation" id="ch6_validation" value={data.ch6_validation} onChange={update} rows={3} />
+            <Field label="6.3 Exception Handling" id="ch6_exception" value={data.ch6_exception} onChange={update} rows={3} />
           </Chapter>
 
-          {/* Chapter 7 */}
+          {/* Chapter 7 - Output Screens */}
           <Chapter chapter={CHAPTERS[8]} open={!!open.ch7} toggle={toggle}>
-            <Field label="7.1 Conclusion" id="ch7_conclusion" value={data.ch7_conclusion} onChange={update} rows={5}
-              hint="Summarize what was achieved in this project." />
-            <Field label="7.2 Future Scope" id="ch7_future" value={data.ch7_future} onChange={update} rows={5}
-              hint="Mention possible future enhancements." />
+            <Field label="Output Screens Summary" id="ch7_screens" value={data.ch7_screens} onChange={update} rows={3} hint="Describe screenshots that should be included." />
+          </Chapter>
+
+          {/* Chapter 8 - Conclusion */}
+          <Chapter chapter={CHAPTERS[9]} open={!!open.ch8} toggle={toggle}>
+            <Field label="Conclusion Summary" id="ch8_conclusion" value={data.ch8_conclusion} onChange={update} rows={4} />
+          </Chapter>
+
+          {/* Chapter 9 - Future Enhancements */}
+          <Chapter chapter={CHAPTERS[10]} open={!!open.ch9} toggle={toggle}>
+            <Field label="Future Enhancements" id="ch9_future" value={data.ch9_future} onChange={update} rows={4} hint="Separate items with newlines for bullet points." />
           </Chapter>
 
           {/* References */}
-          <Chapter chapter={CHAPTERS[9]} open={!!open.refs} toggle={toggle}>
-            <Field label="References" id="references" value={data.references} onChange={update} rows={8}
-              hint="List each reference on a new line. They will be formatted as a numbered bullet list." />
+          <Chapter chapter={CHAPTERS[11]} open={!!open.refs} toggle={toggle}>
+            <Field label="References" id="references" value={data.references} onChange={update} rows={5} hint="List references." />
           </Chapter>
+
+          {/* Appendix */}
+          <Chapter chapter={CHAPTERS[12]} open={!!open.appx} toggle={toggle}>
+            <Field label="Appendix" id="appendix" value={data.appendix} onChange={update} rows={5} hint="Code snippets, queries, screenshots." />
+          </Chapter>
+
         </div>
 
         {/* Download Button */}
