@@ -109,7 +109,8 @@ const autoFillFromText = (text, currentData) => {
 // ─── Initial form state matching all PDF fields ───────────────────────────────
 const INIT = {
   // Cover page
-  institutionName: "", projectTitle: "", studentName: "", rollNumber: "", guideName: "", department: "", academicYear: "",
+  institutionName: "", projectTitle: "", guideName: "", department: "", academicYear: "",
+  students: [{ name: "", roll: "" }], // Dynamic list
 
   abstract: "",
 
@@ -142,7 +143,12 @@ const INIT = {
 // ─── Progress helper ──────────────────────────────────────────────────────────
 const calcProgress = (data) => {
   const keys = Object.keys(INIT);
-  const filled = keys.filter((k) => data[k] && data[k].trim() !== "").length;
+  const filled = keys.filter((k) => {
+    if (k === "students") {
+      return data.students && data.students.some(s => s.name?.trim() || s.roll?.trim());
+    }
+    return data[k] && typeof data[k] === "string" && data[k].trim() !== "";
+  }).length;
   return Math.round((filled / keys.length) * 100);
 };
 
@@ -230,6 +236,29 @@ export default function App() {
   const update = useCallback((key, val) => {
     setData((prev) => ({ ...prev, [key]: val }));
     setReady(false);
+  }, []);
+
+  const updateStudent = useCallback((idx, field, val) => {
+    setData((prev) => {
+      const list = [...(prev.students || [])];
+      list[idx] = { ...list[idx], [field]: val };
+      return { ...prev, students: list };
+    });
+    setReady(false);
+  }, []);
+
+  const addStudent = useCallback(() => {
+    setData((prev) => ({
+      ...prev,
+      students: [...(prev.students || []), { name: "", roll: "" }]
+    }));
+  }, []);
+
+  const removeStudent = useCallback((idx) => {
+    setData((prev) => ({
+      ...prev,
+      students: (prev.students || []).filter((_, i) => i !== idx)
+    }));
   }, []);
 
   const toggle = useCallback((id) => {
@@ -356,15 +385,39 @@ export default function App() {
           {/* Cover Page */}
           <Chapter chapter={CHAPTERS[0]} open={!!open.cover} toggle={toggle}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              <Input label="Institution Name" id="institutionName" value={data.institutionName} onChange={update} placeholder="e.g. ABC Engineering College" />
-              <Input label="Department" id="department" value={data.department} onChange={update} placeholder="e.g. Dept. of Computer Science" />
-              <Input label="Project Title" id="projectTitle" value={data.projectTitle} onChange={update} placeholder="Your Project Title" />
-              <Input label="Academic Year" id="academicYear" value={data.academicYear} onChange={update} placeholder="e.g. 2024–2025" />
-              <Input label="Student Name" id="studentName" value={data.studentName} onChange={update} />
-              <Input label="Roll Number" id="rollNumber" value={data.rollNumber} onChange={update} />
+              <Input label="Institution Name" id="institutionName" value={data.institutionName} onChange={update} placeholder="e.g. ABC College" />
+              <Input label="Department" id="department" value={data.department} onChange={update} placeholder="e.g. CSE" />
+              <Input label="Project Title" id="projectTitle" value={data.projectTitle} onChange={update} />
               <Input label="Guide / Supervisor Name" id="guideName" value={data.guideName} onChange={update} />
+              <Input label="Academic Year" id="academicYear" value={data.academicYear} onChange={update} placeholder="e.g. 2024–2025" />
+            </div>
+
+            <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ fontWeight: 600, fontSize: "0.85rem", color: "#94a3b8" }}>Students</div>
+              {(data.students || []).map((st, idx) => (
+                <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, alignItems: "end" }}>
+                  <Input label={`Student ${idx + 1} Name`} value={st.name} onChange={(_, v) => updateStudent(idx, "name", v)} />
+                  <Input label="Roll Number" value={st.roll} onChange={(_, v) => updateStudent(idx, "roll", v)} />
+                  {idx > 0 && (
+                    <button 
+                      onClick={() => removeStudent(idx)} 
+                      style={{ background: "#ef4444", border: "none", padding: "10px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center" }}
+                    >
+                      <Trash2 size={16} color="white" />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button 
+                className="btn-primary" 
+                style={{ alignSelf: "start", marginTop: 5, padding: "6px 12px", fontSize: "0.8rem", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
+                onClick={addStudent}
+              >
+                + Add Student
+              </button>
             </div>
           </Chapter>
+
 
           {/* Abstract */}
           <Chapter chapter={CHAPTERS[1]} open={!!open.abs} toggle={toggle}>

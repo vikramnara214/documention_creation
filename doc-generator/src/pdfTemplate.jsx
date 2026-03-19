@@ -135,8 +135,12 @@ export const CapstoneDocument = ({ data }) => (
       <Text style={[styles.coverInfo, { marginTop: 30 }]}>
         Submitted by
       </Text>
-      <Text style={styles.coverInfo}>{data.studentName || "Student Name"}</Text>
-      <Text style={styles.coverInfo}>{data.rollNumber || "Roll Number"}</Text>
+      {(data.students || []).map((s, idx) => (
+        <View key={idx} style={{ marginTop: 6, alignItems: "center" }}>
+          <Text style={styles.coverInfo}>{s.name || `Student ${idx + 1}`}</Text>
+          <Text style={{ fontSize: 11, fontFamily: "Times-Roman", color: "#444" }}>{s.roll || "Roll Number"}</Text>
+        </View>
+      ))}
       <Text style={[styles.coverInfo, { marginTop: 20 }]}>
         Under the guidance of
       </Text>
