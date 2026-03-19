@@ -306,6 +306,14 @@ export default function App() {
           <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#d1fae5", color: "#059669", border: "1px solid #a7f3d0" }} onClick={() => addBlock("image")}>+ Photo</button>
         </div>
 
+        {/* Credits */}
+        <div style={{ textAlign: "center", color: "#64748b", fontSize: "0.74rem", marginTop: 8, paddingBottom: 4 }}>
+          Created by <span style={{ fontWeight: 600, color: "#0f172a" }}>Nara Vikram</span>
+          <a href="https://github.com/vikramnara214" target="_blank" rel="noreferrer" style={{ marginLeft: 5, color: "#2563eb", textDecoration: "none", fontWeight: 500 }}>
+            @vikramnara214
+          </a>
+        </div>
+
       </div>
 
       {/* ─── Right Pane (Live PDF Preview) ─── */}
