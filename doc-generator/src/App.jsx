@@ -48,7 +48,63 @@ Please generate detailed, academic, and structured content for the following sec
 9. **Chapter 8 – Conclusion & Chapter 9 – Future Enhancements**.
 
 Maintain a formal, professional, and academic tone.`;
+};const HEADERS_MAP = [
+  { key: "abstract", markers: ["Abstract"] },
+  { key: "ch1_intro", markers: ["1.1 Introduction"] },
+  { key: "ch1_problem", markers: ["1.2 Problem Statement"] },
+  { key: "ch1_objectives", markers: ["1.3 Objectives"] },
+  { key: "ch1_scope", markers: ["1.4 Scope"] },
+  { key: "ch2_existing", markers: ["2.1 Existing System"] },
+  { key: "ch2_limitations", markers: ["2.2 Limitations"] },
+  { key: "ch2_proposed", markers: ["2.3 Proposed System"] },
+  { key: "ch2_software", markers: ["2.4 Software Requirements"] },
+  { key: "ch2_hardware", markers: ["2.5 Hardware Requirements"] },
+  { key: "ch4_tables", markers: ["4.1 Database Tables"] },
+  { key: "ch4_structure", markers: ["4.2 Table Structure"] },
+  { key: "ch4_keys", markers: ["4.3 Keys and Constraints"] },
+  { key: "ch4_relations", markers: ["4.4 Table Relationships"] },
+  { key: "ch4_sample", markers: ["4.5 Sample Data"] },
+  { key: "ch6_connection", markers: ["6.1 Database Connection"] },
+  { key: "ch6_validation", markers: ["6.2 Input Validation"] },
+  { key: "ch6_exception", markers: ["6.3 Exception Handling"] },
+  { key: "ch7_screens", markers: ["7. Output Screens", "7. Output screens"] },
+  { key: "ch8_conclusion", markers: ["8. Conclusion"] },
+  { key: "ch9_future", markers: ["9. Future Enhancements"] },
+  { key: "references", markers: ["10. References"] },
+  { key: "appendix", markers: ["APPENDIX"] }
+];
+
+const autoFillFromText = (text, currentData) => {
+  const result = { ...currentData };
+  let currentKey = null;
+  const lines = text.split("\n");
+
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+
+    let matchedKey = null;
+    HEADERS_MAP.forEach(item => {
+      item.markers.forEach(m => {
+        if (trimmed.toLowerCase().startsWith(m.toLowerCase())) {
+          matchedKey = item.key;
+        }
+      });
+    });
+
+    if (matchedKey) {
+      currentKey = matchedKey;
+      return; 
+    }
+
+    if (currentKey) {
+      result[currentKey] = result[currentKey] ? result[currentKey] + "\n" + trimmed : trimmed;
+    }
+  });
+
+  return result;
 };
+
 
 // ─── Initial form state matching all PDF fields ───────────────────────────────
 const INIT = {
@@ -169,6 +225,7 @@ export default function App() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [aiDesc, setAiDesc] = useState("");
   const [copied, setCopied] = useState(false);
+  const [pasteText, setPasteText] = useState("");
 
   const update = useCallback((key, val) => {
     setData((prev) => ({ ...prev, [key]: val }));
@@ -258,6 +315,38 @@ export default function App() {
               </div>
             </div>
           )}
+        </div>
+
+
+        {/* 🤖 Auto-Fill From Text */}
+        <div className="glass" style={{ padding: "20px", marginBottom: 24, background: "rgba(16, 185, 129, 0.05)", borderColor: "rgba(16, 185, 129, 0.2)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+            <Sparkles size={18} color="#10b981" />
+            <span style={{ fontWeight: 600, fontSize: "0.95rem", color: "#f0f4ff" }}>🤖 Auto-Fill Content Helper</span>
+          </div>
+          <p style={{ fontSize: "0.82rem", color: "#94a3b8", margin: "0 0 10px 0" }}>
+            Paste the full output response from your AI tool here, and it will parse and distribute it across the sections below automatically!
+          </p>
+          <textarea 
+            className="field-input" 
+            rows={2} 
+            placeholder="Paste the full ChatGPT / Gemini text response here..."
+            value={pasteText}
+            onChange={(e) => setPasteText(e.target.value)}
+          />
+          <button 
+            className="btn-primary" 
+            style={{ marginTop: 12, padding: "8px 16px", fontSize: "0.85rem", background: "linear-gradient(135deg,#059669,#10b981)" }}
+            onClick={() => {
+              if (pasteText.trim()) {
+                const newData = autoFillFromText(pasteText, data);
+                setData(newData);
+                setPasteText("");
+              }
+            }}
+          >
+            Apply Autofill
+          </button>
         </div>
 
 
