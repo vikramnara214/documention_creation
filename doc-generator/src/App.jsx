@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import { CapstoneDocument } from "./pdfTemplate";
 import {
@@ -101,10 +101,34 @@ const Chapter = ({ chapter, open, toggle, children }) => {
   );
 };
 
+// ─── Numbering Helper ────────────────────────────────────────────────────────
+const getNumberedLabel = (b, cnt) => {
+  if (b.type === 'chapter') { cnt.ch++; cnt.h1 = 0; cnt.h2 = 0; return `${cnt.ch}`; }
+  if (b.type === 'heading1') { cnt.h1++; cnt.h2 = 0; return `${cnt.ch}.${cnt.h1}`; }
+  if (b.type === 'heading2') { cnt.h2++; return `${cnt.ch}.${cnt.h1}.${cnt.h2}`; }
+  return b.type.toUpperCase();
+};
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [data, setData] = useState(INIT);
   const [ready, setReady] = useState(false);
+
+  // --- LocalStorage Persistence ---
+  useEffect(() => {
+    const saved = localStorage.getItem("capstone_doc_data");
+    if (saved) {
+      try {
+        setData(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load saved data", e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("capstone_doc_data", JSON.stringify(data));
+  }, [data]);
 
   const update = useCallback((key, val) => {
     setData((prev) => ({ ...prev, [key]: val }));
@@ -241,11 +265,15 @@ export default function App() {
           {/* Canvas Blocks Layout sequential list */}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ fontWeight: 600, color: "#475569", fontSize: "0.82rem" }}>Sections Canvas</div>
-            {(data.blocks || []).map((b, bIdx) => (
+            {(() => {
+              let cnt = { ch: 0, h1: 0, h2: 0 };
+              return (data.blocks || []).map((b, bIdx) => {
+                const label = getNumberedLabel(b, cnt);
+                return (
               <div key={b.id} className="glass" style={{ padding: "12px", borderLeft: b.type === 'chapter' ? '3px solid #ef4444' : '1px solid var(--border)' }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <span style={{ fontSize: "0.68rem", fontWeight: 700, color: b.type === 'chapter' ? '#dc2626' : b.type==='image' ? '#059669' : '#2563eb', textTransform: "uppercase" }}>
-                    {b.type}
+                    {label}
                   </span>
                   <div style={{ display: "flex", gap: 4 }}>
                     <button onClick={() => moveBlock(bIdx, -1)} disabled={bIdx === 0} style={{ opacity: bIdx === 0 ? 0.3 : 1, padding: "2px 6px", background: "#f1f5f9", border: "none", borderRadius: 4, cursor: "pointer", fontSize: "0.75rem" }}>↑</button>
@@ -265,13 +293,27 @@ export default function App() {
                   />
                 )}
 
-                {(b.type === "paragraph" || b.type === "list" || b.type === "chapter" || b.type === "heading1" || b.type === "heading2") && (
+                {(b.type === "paragraph" || b.type === "list") && (
                   <textarea 
                     className="field-input" 
                     rows={b.type === "paragraph" ? 4 : 2}
                     style={{ fontSize: "0.82rem", padding: "6px 8px" }}
                     value={b.content} 
                     onChange={(e) => updateBlock(b.id, "content", e.target.value)} 
+                    onKeyDown={(e) => {
+                      if (e.key === 'Tab') {
+                        e.preventDefault();
+                        const start = e.target.selectionStart;
+                        const end = e.target.selectionEnd;
+                        const val = e.target.value;
+                        const newVal = val.substring(0, start) + "\t" + val.substring(end);
+                        updateBlock(b.id, "content", newVal);
+                        // Prevent cursor jump backwards on state updates
+                        setTimeout(() => {
+                          e.target.selectionStart = e.target.selectionEnd = start + 1;
+                        }, 0);
+                      }
+                    }}
                     placeholder={b.type === "list" ? "Point 1\nPoint 2\nPoint 3..." : "Type text content..."} 
                   />
                 )}
@@ -291,7 +333,9 @@ export default function App() {
                   </div>
                 )}
               </div>
-            ))}
+                );
+              });
+            })()}
           </div>
 
         </div>
@@ -316,11 +360,120 @@ export default function App() {
 
       </div>
 
-      {/* ─── Right Pane (Live PDF Preview) ─── */}
-      <div className="app-preview" style={{ flex: 1, background: "#cbd5e1", padding: "16px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <PDFViewer style={{ width: "100%", height: "100%", border: "none", borderRadius: "6px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)" }}>
-          <CapstoneDocument data={data} />
-        </PDFViewer>
+      {/* ─── Right Pane (Live HTML Preview) ─── */}
+      <div className="app-preview" style={{ flex: 1, background: "#cbd5e1", padding: "20px", overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+        
+        {/* Top toolbar with Download Button */}
+        <div style={{ display: "flex", justifyContent: "flex-end", width: "100%", maxWidth: "800px" }}>
+          <PDFDownloadLink
+            document={<CapstoneDocument data={data} />}
+            fileName={`${(data.projectTitle || "capstone_report").replace(/\s+/g, "_")}.pdf`}
+            style={{ textDecoration: "none" }}
+          >
+            {({ loading }) => (
+              <button className="btn-primary" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.82rem", padding: "8px 16px" }}>
+                <Download size={16} /> 
+                {loading ? "Generating PDF…" : "Download PDF"}
+              </button>
+            )}
+          </PDFDownloadLink>
+        </div>
+
+        {/* ==================== PAGE 1: COVER ==================== */}
+        <div className="paper-sheet" style={{ textAlign: "left" }}>
+          <div style={{ textAlign: "center", marginBottom: 40, display: "flex", flexDirection: "column", gap: 10, textTransform: "uppercase", fontWeight: "bold" }}>
+            <div style={{ fontSize: "16pt", margin: "30px 0" }}>{data.institutionName || "[INSTITUTION NAME]"}</div>
+            <div style={{ fontSize: "12pt", letterSpacing: "1px" }}>A PROJECT REPORT ON</div>
+            <div style={{ fontSize: "16pt", margin: "15px 0", color: "#1e3a8a" }}>{data.projectTitle || "[PROJECT TITLE]"}</div>
+            <div style={{ fontSize: "11pt", marginTop: 15 }}>Submitted by</div>
+            <div style={{ fontSize: "11pt", margin: "5px 0", textTransform: "none", fontWeight: "normal" }}>
+              {(data.students || []).map((s, idx) => (
+                <div key={idx} style={{ marginBottom: 4 }}>{s.name} {s.roll ? `(${s.roll})` : ""}</div>
+              ))}
+            </div>
+            <div style={{ fontSize: "11pt", marginTop: 15 }}>Under the guidance of</div>
+            <div style={{ fontSize: "11pt", textTransform: "none", fontWeight: "normal" }}>{data.guideName || "[GUIDE NAME]"}</div>
+            <div style={{ fontSize: "12pt", marginTop: 40, textTransform: "uppercase" }}>{data.department || "[DEPARTMENT]"}</div>
+            <div style={{ fontSize: "12pt" }}>{data.academicYear || "[ACADEMIC YEAR]"}</div>
+          </div>
+        </div>
+
+        {/* ==================== PAGE 2: APPENDIX / ToC ==================== */}
+        <div className="paper-sheet" style={{ textAlign: "left" }}>
+          <div style={{ marginTop: 20, marginBottom: 40 }}>
+            <div style={{ fontSize: "14pt", fontWeight: "bold", textTransform: "uppercase", textAlign: "center", marginBottom: 30, fontFamily: "serif" }}>
+              APPENDIX / TABLE OF CONTENTS
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 10px" }}>
+              {(() => {
+                let tocCnt = { ch: 0, h1: 0, h2: 0 };
+                return (data.blocks || [])
+                  .filter(b => b.type === 'chapter' || b.type === 'heading1')
+                  .map((b, idx) => {
+                    const label = getNumberedLabel(b, tocCnt);
+                    const isChapter = b.type === 'chapter';
+                    return (
+                      <div key={idx} style={{ display: "flex", justifyContent: "space-between", fontSize: "12pt", paddingLeft: b.type === 'heading1' ? 24 : 0, fontWeight: isChapter ? "bold" : "normal" }}>
+                        <span>{label}. {b.title || (isChapter ? "Untitled Chapter" : "Untitled Heading")}</span>
+                        <span style={{ flex: 1, borderBottom: "1px dotted #94a3b8", margin: "0 8px", alignSelf: "bottom", marginBottom: 4 }}></span>
+                        <span style={{ color: "#64748b", fontSize: "10pt" }}>---</span>
+                      </div>
+                    );
+                  });
+              })()}
+            </div>
+          </div>
+        </div>
+
+        {/* ==================== PAGE 3+: DYNAMIC BODY PAGES ==================== */}
+        {(() => {
+          let pCnt = { ch: 0, h1: 0, h2: 0 };
+          const pages = [];
+          let currentBlocks = [];
+
+          (data.blocks || []).forEach((b) => {
+            const label = getNumberedLabel(b, pCnt);
+            
+            if (b.type === "chapter" && currentBlocks.length > 0) {
+              pages.push(
+                <div className="paper-sheet" style={{ textAlign: "left" }} key={`page-${pCnt.ch}`}>
+                  {currentBlocks}
+                </div>
+              );
+              currentBlocks = [];
+            }
+
+            currentBlocks.push(
+              <div key={b.id}>
+                {b.type === "chapter" && <div className="doc-chapter">{label}. {b.title}</div>}
+                {b.type === "heading1" && <div className="doc-h1">{label} {b.title}</div>}
+                {b.type === "heading2" && <div className="doc-h2">{label} {b.title}</div>}
+                {b.type === "paragraph" && <p className="doc-p">{b.content}</p>}
+                {b.type === "list" && (
+                  <ul className="doc-ul">
+                    {(b.content || "").split('\n').filter(l => l.trim()).map((l, i) => <li key={i}>{l}</li>)}
+                  </ul>
+                )}
+                {b.type === "image" && (
+                  <div style={{ textAlign: "center", margin: "20px 0" }}>
+                    {b.src && <img src={b.src} style={{ maxWidth: "100%", maxHeight: "360px", borderRadius: 4 }} alt="Preview" />}
+                    <p style={{ fontSize: "11pt", fontStyle: "italic", marginTop: 6, color: "#4b5563" }}>{b.title}</p>
+                  </div>
+                )}
+              </div>
+            );
+          });
+
+          if (currentBlocks.length > 0) {
+            pages.push(
+              <div className="paper-sheet" style={{ textAlign: "left" }} key={`page-last`}>
+                {currentBlocks}
+              </div>
+            );
+          }
+
+          return pages;
+        })()}
       </div>
 
     </div>

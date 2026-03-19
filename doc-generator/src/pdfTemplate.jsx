@@ -151,15 +151,60 @@ export const CapstoneDocument = ({ data }) => (
       <Text style={styles.coverInfo}>{data.academicYear || "Academic Year"}</Text>
     </Page>
 
+    {/* ===== TABLE OF CONTENTS PAGE ===== */}
+    <Page size="A4" style={styles.page}>
+      <Text style={[styles.chapterTitle, { marginBottom: 25, textAlign: "center" }]}>TABLE OF CONTENTS</Text>
+      
+      {(() => {
+        let cnt = { ch: 0, h1: 0, h2: 0 };
+        return (data.blocks || [])
+          .filter(b => b.type === 'chapter' || b.type === 'heading1')
+          .map((b, idx) => {
+             const isChapter = b.type === "chapter";
+             let label = "";
+             if (b.type === 'chapter') { cnt.ch++; cnt.h1 = 0; label = `${cnt.ch}`; }
+             else if (b.type === 'heading1') { cnt.h1++; label = `${cnt.ch}.${cnt.h1}`; }
+
+             return (
+               <View key={idx} style={{ 
+                 display: "flex", 
+                 flexDirection: "row", 
+                 justifyContent: "space-between", 
+                 marginBottom: 10,
+                 paddingLeft: b.type === 'heading1' ? 20 : 0 
+               }}>
+                 <Text style={{ 
+                   fontSize: 12, 
+                   fontFamily: isChapter ? "Times-Bold" : "Times-Roman",
+                 }}>
+                   {label}. {b.title || (isChapter ? "Untitled Chapter" : "Untitled Heading")}
+                 </Text>
+                 <Text style={{ flex: 1, borderBottomWidth: 1, borderBottomColor: "#999", borderBottomStyle: "dotted", marginHorizontal: 8 }} />
+                 <Text style={{ fontSize: 11, color: "#666" }}>---</Text>
+               </View>
+             );
+          });
+      })()}
+      <Text style={styles.pageNumber} render={() => "ii"} fixed />
+    </Page>
+
     {/* ===== CONTINUOUS BODY PAGES WITH BLOCKS ===== */}
     <Page size="A4" style={styles.page}>
-      {(data.blocks || []).map((b, idx) => {
-        const isChapter = b.type === "chapter";
-        return (
-          <View key={b.id || idx} break={isChapter && idx > 0} style={{ marginBottom: 14 }}>
-            {b.type === "chapter" && <Text style={styles.chapterTitle}>{b.title}</Text>}
-            {b.type === "heading1" && <Text style={styles.heading1}>{b.title}</Text>}
-            {b.type === "heading2" && <Text style={styles.heading2}>{b.title}</Text>}
+      {(() => {
+        let cnt = { ch: 0, h1: 0, h2: 0 };
+        return (data.blocks || []).map((b, idx) => {
+          const isChapter = b.type === "chapter";
+          
+          let label = "";
+          if (b.type === 'chapter') { cnt.ch++; cnt.h1 = 0; cnt.h2 = 0; label = `${cnt.ch}. ${b.title}`; }
+          else if (b.type === 'heading1') { cnt.h1++; cnt.h2 = 0; label = `${cnt.ch}.${cnt.h1} ${b.title}`; }
+          else if (b.type === 'heading2') { cnt.h2++; label = `${cnt.ch}.${cnt.h1}.${cnt.h2} ${b.title}`; }
+
+          return (
+            <View key={b.id || idx} break={isChapter && idx > 0} style={{ marginBottom: 14 }}>
+              {b.type === "chapter" && <Text style={styles.chapterTitle}>{label}</Text>}
+              {b.type === "heading1" && <Text style={styles.heading1}>{label}</Text>}
+              {b.type === "heading2" && <Text style={styles.heading2}>{label}</Text>}
             
             {b.content && b.type !== 'image' && (
               b.type === 'list' 
@@ -172,12 +217,13 @@ export const CapstoneDocument = ({ data }) => (
                 <Image src={b.src} style={{ maxHeight: 220, maxWidth: "80%", marginBottom: 6, objectFit: "contain" }} />
                 {b.title && <Text style={{ fontSize: 11, fontFamily: "Times-Bold", textAlign: "center" }}>{b.title}</Text>}
               </View>
-            )}
-          </View>
-        );
-      })}
+              )}
+            </View>
+          );
+        });
+      })()}
       {/* Dynamic Page Numbers */}
-      <Text style={styles.pageNumber} render={({ pageNumber }) => pageNumber - 1} fixed />
+      <Text style={styles.pageNumber} render={({ pageNumber }) => pageNumber - 2} fixed />
     </Page>
   </Document>
 );
