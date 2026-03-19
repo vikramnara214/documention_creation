@@ -10,182 +10,24 @@ import {
 // ... (INIT, calcProgress, CHAPTERS, Field, Input, Chapter stay the same)
 // I will keep the original lines for everything else and just append the state and JSX inside App()
 
-const generatePrompt = (title, desc) => {
-  return `You are an academic writing expert. I need content for a Capstone Project Report.
-Project Title: "${title || "[Insert Title]"}"
-Project Description: "${desc || "[Insert Description]"}"
-
-Please generate detailed, academic, and structured content for the following sections:
-
-1. **Abstract**: A 200-word concise summary of the project.
-2. **Chapter 1 – Introduction**:
-   - 1.1 Introduction: General background.
-   - 1.2 Problem Statement: Current limitations.
-   - 1.3 Objectives: Bullet points of goals.
-   - 1.4 Scope: Application areas.
-3. **Chapter 2 – System Overview**:
-   - 2.1 Existing System.
-   - 2.2 Limitations.
-   - 2.3 Proposed System.
-   - 2.4 Software Requirements.
-   - 2.5 Hardware Requirements.
-4. **Chapter 3 – Technologies Used**:
-   - List 3-4 technologies with short explanations of use.
-5. **Chapter 4 – Database Design**:
-   - 4.1 Database Tables.
-   - 4.2 Table Structure (specify fields for tables).
-   - 4.3 Keys and Constraints.
-   - 4.4 Table Relationships.
-   - 4.5 Sample Data.
-6. **Chapter 5 – System Modules**:
-   - Describe 3-4 major functional modules (e.g., Add, Search).
-7. **Chapter 6 – Implementation**:
-   - 6.1 Database Connection.
-   - 6.2 Input Validation.
-   - 6.3 Exception Handling.
-8. **Chapter 7 – Output Screens**:
-   - General summary describing UI screen items required.
-9. **Chapter 8 – Conclusion & Chapter 9 – Future Enhancements**.
-
-Maintain a formal, professional, and academic tone.`;
-};const HEADERS_MAP = [
-  { key: "abstract", markers: ["Abstract"] },
-  { key: "ch1_intro", markers: ["1.1 Introduction"] },
-  { key: "ch1_problem", markers: ["1.2 Problem Statement"] },
-  { key: "ch1_objectives", markers: ["1.3 Objectives"] },
-  { key: "ch1_scope", markers: ["1.4 Scope"] },
-  { key: "ch2_existing", markers: ["2.1 Existing System"] },
-  { key: "ch2_limitations", markers: ["2.2 Limitations"] },
-  { key: "ch2_proposed", markers: ["2.3 Proposed System"] },
-  { key: "ch2_software", markers: ["2.4 Software Requirements"] },
-  { key: "ch2_hardware", markers: ["2.5 Hardware Requirements"] },
-  { key: "ch4_tables", markers: ["4.1 Database Tables"] },
-  { key: "ch4_structure", markers: ["4.2 Table Structure"] },
-  { key: "ch4_keys", markers: ["4.3 Keys and Constraints"] },
-  { key: "ch4_relations", markers: ["4.4 Table Relationships"] },
-  { key: "ch4_sample", markers: ["4.5 Sample Data"] },
-  { key: "ch6_connection", markers: ["6.1 Database Connection"] },
-  { key: "ch6_validation", markers: ["6.2 Input Validation"] },
-  { key: "ch6_exception", markers: ["6.3 Exception Handling"] },
-  { key: "ch7_screens", markers: ["7. Output Screens", "7. Output screens"] },
-  { key: "ch8_conclusion", markers: ["8. Conclusion"] },
-  { key: "ch9_future", markers: ["9. Future Enhancements"] },
-  { key: "references", markers: ["10. References"] },
-  { key: "appendix", markers: ["APPENDIX"] }
-];
-
-const autoFillFromText = (text, currentData) => {
-  const result = { ...currentData };
-  let currentKey = null;
-
-  result.techs = [];
-  result.modules = [];
-  let currentTechIdx = -1;
-  let currentModIdx = -1;
-
-  const lines = text.split("\n");
-
-  lines.forEach(line => {
-    const trimmed = line.trim();
-    if (!trimmed) return;
-
-    // regex 3.X Name
-    const techMatch = trimmed.match(/^3\.(\d+)\s+(.+)$/i);
-    if (techMatch && !trimmed.includes("Requirements") && !trimmed.includes("overview")) {
-      currentTechIdx++;
-      result.techs.push({ name: techMatch[2].trim(), desc: "" });
-      currentKey = "tech_desc";
-      return;
-    }
-
-    // regex Module X: Name
-    const modMatch = trimmed.match(/^(?:Module\s*(\d+)|mod\s*(\d+))\s*:\s*(.+)$/i);
-    if (modMatch) {
-      currentModIdx++;
-      result.modules.push({ name: modMatch[3]?.trim() || "", desc: "" });
-      currentKey = "mod_desc";
-      return;
-    }
-
-    let matchedKey = null;
-    HEADERS_MAP.forEach(item => {
-      item.markers.forEach(m => {
-        if (trimmed.toLowerCase().startsWith(m.toLowerCase())) {
-          matchedKey = item.key;
-        }
-      });
-    });
-
-    if (matchedKey) {
-      currentKey = matchedKey;
-      return; 
-    }
-
-    if (currentKey === "tech_desc" && currentTechIdx >= 0) {
-      result.techs[currentTechIdx].desc = result.techs[currentTechIdx].desc 
-        ? result.techs[currentTechIdx].desc + "\n" + trimmed : trimmed;
-    } else if (currentKey === "mod_desc" && currentModIdx >= 0) {
-      result.modules[currentModIdx].desc = result.modules[currentModIdx].desc 
-        ? result.modules[currentModIdx].desc + "\n" + trimmed : trimmed;
-    } else if (currentKey) {
-      result[currentKey] = result[currentKey] ? result[currentKey] + "\n" + trimmed : trimmed;
-    }
-  });
-
-  return result;
-};
-
-
 // ─── Initial form state matching all PDF fields ───────────────────────────────
 const INIT = {
   // Cover page
   institutionName: "", projectTitle: "", guideName: "", department: "", academicYear: "",
   students: [{ name: "", roll: "" }], 
 
-  abstract: "",
-
-  // Ch 1
-  ch1_intro: "", ch1_problem: "", ch1_objectives: "", ch1_scope: "",
-
-  // Ch 2
-  ch2_existing: "", ch2_limitations: "", ch2_proposed: "", ch2_software: "", ch2_hardware: "",
-
-  // Ch 3
-  techs: [{ name: "", desc: "" }], // Dynamic list
-
-  // Ch 4 - Database Design
-  ch4_tables: "", ch4_structure: "", ch4_keys: "", ch4_relations: "", ch4_sample: "",
-
-  // Ch 5 - Modules
-  modules: [{ name: "", desc: "" }], // Dynamic list
-
-  // Ch 6 - Implementation
-  ch6_connection: "", ch6_validation: "", ch6_exception: "",
-
-  ch7_screens: "",
-  ch8_conclusion: "",
-  ch9_future: "",
-
-  references: "",
-  appendix: "",
+  // Dynamic Sequential Blocks Canvas
+  blocks: [
+    { id: "1", type: "chapter", title: "Abstract", content: "Write your abstract here..." }
+  ]
 };
 
 // ─── Progress helper ──────────────────────────────────────────────────────────
 const calcProgress = (data) => {
-  const keys = Object.keys(INIT);
-  const filled = keys.filter((k) => {
-    if (k === "students") {
-      return data.students && data.students.some(s => s.name?.trim() || s.roll?.trim());
-    }
-    if (k === "techs") {
-      return data.techs && data.techs.some(t => t.name?.trim() || t.desc?.trim());
-    }
-    if (k === "modules") {
-      return data.modules && data.modules.some(m => m.name?.trim() || m.desc?.trim());
-    }
-    return data[k] && typeof data[k] === "string" && data[k].trim() !== "";
-  }).length;
-  return Math.round((filled / keys.length) * 100);
+  const blocksCount = (data.blocks || []).length;
+  if (!blocksCount) return 0;
+  const filled = (data.blocks || []).filter(b => b.title?.trim() || b.content?.trim() || b.src).length;
+  return Math.round((filled / blocksCount) * 100);
 };
 
 // ─── Chapter section IDs ─────────────────────────────────────────────────────
@@ -262,12 +104,7 @@ const Chapter = ({ chapter, open, toggle, children }) => {
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
   const [data, setData] = useState(INIT);
-  const [open, setOpen] = useState({ cover: true });
   const [ready, setReady] = useState(false);
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [aiDesc, setAiDesc] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [pasteText, setPasteText] = useState("");
 
   const update = useCallback((key, val) => {
     setData((prev) => ({ ...prev, [key]: val }));
@@ -295,54 +132,44 @@ export default function App() {
       ...prev,
       students: (prev.students || []).filter((_, i) => i !== idx)
     }));
-  }, []);  const updateTech = useCallback((idx, field, val) => {
-    setData((prev) => {
-      const list = [...(prev.techs || [])];
-      list[idx] = { ...list[idx], [field]: val };
-      return { ...prev, techs: list };
-    });
+  }, []);
+
+  // --- Block Handlers ---
+  const addBlock = useCallback((type) => {
+    setData((prev) => ({
+      ...prev,
+      blocks: [...(prev.blocks || []), { id: Date.now().toString(), type, title: "", content: "", src: "" }]
+    }));
     setReady(false);
   }, []);
 
-  const addTech = useCallback(() => {
+  const updateBlock = useCallback((id, field, val) => {
     setData((prev) => ({
       ...prev,
-      techs: [...(prev.techs || []), { name: "", desc: "" }]
+      blocks: (prev.blocks || []).map(b => b.id === id ? { ...b, [field]: val } : b)
     }));
-  }, []);
-
-  const removeTech = useCallback((idx) => {
-    setData((prev) => ({
-      ...prev,
-      techs: (prev.techs || []).filter((_, i) => i !== idx)
-    }));
-  }, []);
-
-  const updateModule = useCallback((idx, field, val) => {
-    setData((prev) => {
-      const list = [...(prev.modules || [])];
-      list[idx] = { ...list[idx], [field]: val };
-      return { ...prev, modules: list };
-    });
     setReady(false);
   }, []);
 
-  const addModule = useCallback(() => {
+  const removeBlock = useCallback((id) => {
     setData((prev) => ({
       ...prev,
-      modules: [...(prev.modules || []), { name: "", desc: "" }]
+      blocks: (prev.blocks || []).map(b => b.id === id ? null : b).filter(Boolean)
     }));
+    setReady(false);
   }, []);
 
-  const removeModule = useCallback((idx) => {
-    setData((prev) => ({
-      ...prev,
-      modules: (prev.modules || []).filter((_, i) => i !== idx)
-    }));
-  }, []);
-
-  const toggle = useCallback((id) => {
-    setOpen((prev) => ({ ...prev, [id]: !prev[id] }));
+  const moveBlock = useCallback((idx, dir) => {
+    setData((prev) => {
+      const list = [...(prev.blocks || [])];
+      const target = idx + dir;
+      if (target < 0 || target >= list.length) return prev;
+      const temp = list[idx];
+      list[idx] = list[target];
+      list[target] = temp;
+      return { ...prev, blocks: list };
+    });
+    setReady(false);
   }, []);
 
   const progress = calcProgress(data);
@@ -384,270 +211,130 @@ export default function App() {
           <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#a78bfa", minWidth: 38 }}>{progress}%</span>
         </div>
 
-        {/* AI Prompt Assistant */}
-        <div className="glass" style={{ padding: "20px", marginBottom: 24, background: "rgba(99, 102, 241, 0.05)", borderColor: "rgba(99, 102, 241, 0.2)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }} onClick={() => setShowPrompt(!showPrompt)}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <Sparkles size={18} color="#8b5cf6" />
-              <span style={{ fontWeight: 600, fontSize: "0.95rem", color: "#f0f4ff" }}>💡 AI Content Assistant</span>
-            </div>
-            {showPrompt ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+        {/* Cover Metadata */}
+        <div className="glass" style={{ padding: "24px", marginBottom: 24 }}>
+          <div style={{ fontWeight: 600, marginBottom: 16, color: "#a78bfa" }}>Cover Page & Metadata</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            <Input label="Institution Name" value={data.institutionName} onChange={(_, v) => update("institutionName", v)} />
+            <Input label="Department" value={data.department} onChange={(_, v) => update("department", v)} />
+            <Input label="Project Title" value={data.projectTitle} onChange={(_, v) => update("projectTitle", v)} />
+            <Input label="Guide / Supervisor Name" value={data.guideName} onChange={(_, v) => update("guideName", v)} />
+            <Input label="Academic Year" value={data.academicYear} onChange={(_, v) => update("academicYear", v)} placeholder="e.g. 2024–2025" />
           </div>
           
-          {showPrompt && (
-            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-              <p style={{ fontSize: "0.82rem", color: "#94a3b8", margin: 0 }}>
-                Briefly describe your project. This generates a structured prompt to paste into AI tools to get back content ready to fill sections below.
-              </p>
-              <textarea 
-                className="field-input" 
-                rows={2} 
-                placeholder="e.g., An IOT based smart home energy management dashboard using React & ESP32."
-                value={aiDesc}
-                onChange={(e) => { setAiDesc(e.target.value); setCopied(false); }}
-              />
-              
-              <div style={{ background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "8px", position: "relative" }}>
-                <pre style={{ margin: 0, fontSize: "0.78rem", color: "#e2e8f0", whiteSpace: "pre-wrap", maxHeight: "150px", overflowY: "auto", fontFamily: "monospace" }}>
-                  {generatePrompt(data.projectTitle, aiDesc)}
-                </pre>
-                <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(generatePrompt(data.projectTitle, aiDesc));
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                  }}
-                  style={{ position: "absolute", top: 8, right: 8, background: "rgba(255,255,255,0.1)", border: "none", padding: "6px", borderRadius: "4px", cursor: "pointer" }}
-                >
-                  {copied ? <CheckCheck size={14} color="#10b981" /> : <Copy size={14} color="#94a3b8" />}
-                </button>
+          <div style={{ marginTop: 20 }}>
+            <div style={{ fontWeight: 600, fontSize: "0.85rem", color: "#94a3b8", marginBottom: 10 }}>Students</div>
+            {(data.students || []).map((st, idx) => (
+              <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, alignItems: "end", marginBottom: 8 }}>
+                <Input label={`Student ${idx + 1} Name`} value={st.name} onChange={(_, v) => updateStudent(idx, "name", v)} />
+                <Input label="Roll Number" value={st.roll} onChange={(_, v) => updateStudent(idx, "roll", v)} />
+                {idx > 0 && (
+                  <button onClick={() => removeStudent(idx)} style={{ background: "#ef4444", border: "none", padding: "10px", borderRadius: "6px", cursor: "pointer" }}>
+                    <Trash2 size={16} color="white" />
+                  </button>
+                )}
               </div>
-            </div>
-          )}
-        </div>
-
-
-        {/* 🤖 Auto-Fill From Text */}
-        <div className="glass" style={{ padding: "20px", marginBottom: 24, background: "rgba(16, 185, 129, 0.05)", borderColor: "rgba(16, 185, 129, 0.2)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <Sparkles size={18} color="#10b981" />
-            <span style={{ fontWeight: 600, fontSize: "0.95rem", color: "#f0f4ff" }}>🤖 Auto-Fill Content Helper</span>
+            ))}
+            <button className="btn-primary" style={{ alignSelf: "start", padding: "6px 12px", fontSize: "0.8rem", background: "rgba(255,255,255,0.1)" }} onClick={addStudent}>+ Add Student</button>
           </div>
-          <p style={{ fontSize: "0.82rem", color: "#94a3b8", margin: "0 0 10px 0" }}>
-            Paste the full output response from your AI tool here, and it will parse and distribute it across the sections below automatically!
-          </p>
-          <textarea 
-            className="field-input" 
-            rows={2} 
-            placeholder="Paste the full ChatGPT / Gemini text response here..."
-            value={pasteText}
-            onChange={(e) => setPasteText(e.target.value)}
-          />
-          <button 
-            className="btn-primary" 
-            style={{ marginTop: 12, padding: "8px 16px", fontSize: "0.85rem", background: "linear-gradient(135deg,#059669,#10b981)" }}
-            onClick={() => {
-              if (pasteText.trim()) {
-                const newData = autoFillFromText(pasteText, data);
-                setData(newData);
-                setPasteText("");
-              }
-            }}
-          >
-            Apply Autofill
-          </button>
         </div>
 
-
-        {/* Sections */}
+        {/* --- Block Canvas Workspace --- */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-          {/* Cover Page */}
-          <Chapter chapter={CHAPTERS[0]} open={!!open.cover} toggle={toggle}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              <Input label="Institution Name" id="institutionName" value={data.institutionName} onChange={update} placeholder="e.g. ABC College" />
-              <Input label="Department" id="department" value={data.department} onChange={update} placeholder="e.g. CSE" />
-              <Input label="Project Title" id="projectTitle" value={data.projectTitle} onChange={update} />
-              <Input label="Guide / Supervisor Name" id="guideName" value={data.guideName} onChange={update} />
-              <Input label="Academic Year" id="academicYear" value={data.academicYear} onChange={update} placeholder="e.g. 2024–2025" />
-            </div>
-
-            <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
-              <div style={{ fontWeight: 600, fontSize: "0.85rem", color: "#94a3b8" }}>Students</div>
-              {(data.students || []).map((st, idx) => (
-                <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, alignItems: "end" }}>
-                  <Input label={`Student ${idx + 1} Name`} value={st.name} onChange={(_, v) => updateStudent(idx, "name", v)} />
-                  <Input label="Roll Number" value={st.roll} onChange={(_, v) => updateStudent(idx, "roll", v)} />
-                  {idx > 0 && (
-                    <button 
-                      onClick={() => removeStudent(idx)} 
-                      style={{ background: "#ef4444", border: "none", padding: "10px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center" }}
-                    >
-                      <Trash2 size={16} color="white" />
-                    </button>
-                  )}
+          <div style={{ fontWeight: 600, letterSpacing: "0.05em", color: "#e2e8f0", fontSize: "0.9rem", marginBottom: 4 }}>Document Report Workflow</div>
+          {(data.blocks || []).map((b, bIdx) => (
+            <div key={b.id} className="glass" style={{ padding: "16px", position: "relative", borderLeft: b.type === 'chapter' ? '4px solid #ef4444' : '1px solid rgba(255,255,255,0.1)' }}>
+              {/* Block Header Toolbar */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: b.type === 'chapter' ? '#f87171' : b.type==='image' ? '#34d399' : '#818cf8', textTransform: "uppercase" }}>
+                  {b.type}
+                </span>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button onClick={() => moveBlock(bIdx, -1)} disabled={bIdx === 0} style={{ opacity: bIdx === 0 ? 0.3 : 1, padding: "4px 8px", background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 4, cursor: "pointer" }}>↑</button>
+                  <button onClick={() => moveBlock(bIdx, 1)} disabled={bIdx === (data.blocks.length - 1)} style={{ opacity: bIdx === (data.blocks.length - 1) ? 0.3 : 1, padding: "4px 8px", background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 4, cursor: "pointer" }}>↓</button>
+                  <button onClick={() => removeBlock(b.id)} style={{ color: "#f87171", padding: "4px 8px", background: "rgba(239, 68, 68, 0.1)", border: "none", borderRadius: 4, cursor: "pointer" }}><Trash2 size={14} /></button>
                 </div>
-              ))}
-              <button 
-                className="btn-primary" 
-                style={{ alignSelf: "start", marginTop: 5, padding: "6px 12px", fontSize: "0.8rem", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
-                onClick={addStudent}
-              >
-                + Add Student
-              </button>
-            </div>
-          </Chapter>
-
-
-          {/* Abstract */}
-          <Chapter chapter={CHAPTERS[1]} open={!!open.abs} toggle={toggle}>
-            <Field label="Abstract" id="abstract" value={data.abstract} onChange={update} rows={6}
-              hint="A concise summary of the entire project (typically 150–250 words)." />
-          </Chapter>
-
-          {/* Chapter 1 */}
-          <Chapter chapter={CHAPTERS[2]} open={!!open.ch1} toggle={toggle}>
-            <Field label="1.1 Introduction" id="ch1_intro" value={data.ch1_intro} onChange={update} rows={5}
-              hint="General introduction to the project — what it does and why it is needed." />
-            <Field label="1.2 Problem Statement" id="ch1_problem" value={data.ch1_problem} onChange={update} rows={4}
-              hint="Describe the problem that exists in the current system." />
-            <Field label="1.3 Objectives of the Project" id="ch1_objectives" value={data.ch1_objectives} onChange={update} rows={5}
-              hint="List each objective on a new line (they will be formatted as bullet points)." />
-            <Field label="1.4 Scope of the Project" id="ch1_scope" value={data.ch1_scope} onChange={update} rows={4}
-              hint="Where and how the system can be used." />
-          </Chapter>
-
-          {/* Chapter 2 */}
-          <Chapter chapter={CHAPTERS[3]} open={!!open.ch2} toggle={toggle}>
-            <Field label="2.1 Existing System" id="ch2_existing" value={data.ch2_existing} onChange={update} rows={4}
-              hint="Explain how the task is currently done without this software." />
-            <Field label="2.2 Limitations of Existing System" id="ch2_limitations" value={data.ch2_limitations} onChange={update} rows={5}
-              hint="List each limitation on a new line — they will appear as bullet points." />
-            <Field label="2.3 Proposed System" id="ch2_proposed" value={data.ch2_proposed} onChange={update} rows={4}
-              hint="Explain the solution developed in this project." />
-            <Field label="2.4 Software Requirements" id="ch2_software" value={data.ch2_software} onChange={update} rows={4}
-              hint="List software (one per line). e.g. Node.js, MySQL, VS Code, Windows" />
-            <Field label="2.5 Hardware Requirements" id="ch2_hardware" value={data.ch2_hardware} onChange={update} rows={4}
-              hint="List hardware specs (one per line). e.g. Processor: Intel i3 or above" />
-          </Chapter>
-
-          {/* Chapter 3 */}
-          <Chapter chapter={CHAPTERS[4]} open={!!open.ch3} toggle={toggle}>
-            <p style={{ color: "#64748b", fontSize: "0.82rem", margin: 0 }}>
-              Add technologies used in your project (e.g. React, Node.js, MySQL, Java)
-            </p>
-            {(data.techs || []).map((t, idx) => (
-              <div key={idx} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 14, display: "flex", flexDirection: "column", gap: 10, position: "relative" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#a78bfa" }}>Technology {idx + 1}</span>
-                  {idx > 0 && (
-                    <button onClick={() => removeTech(idx)} style={{ background: "#ef4444", border: "none", padding: "6px", borderRadius: "4px", cursor: "pointer" }}>
-                      <Trash2 size={14} color="white" />
-                    </button>
-                  )}
-                </div>
-                <Input label="Technology Name" value={t.name} onChange={(_, v) => updateTech(idx, "name", v)} />
-                <Field label="Description" value={t.desc} onChange={(_, v) => updateTech(idx, "desc", v)} rows={3} hint="Explain what it is and why it was used." />
               </div>
-            ))}
-            <button 
-              className="btn-primary" 
-              style={{ alignSelf: "start", marginTop: 5, padding: "6px 12px", fontSize: "0.8rem", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
-              onClick={addTech}
-            >
-              + Add Technology
-            </button>
-          </Chapter>
 
-          {/* Chapter 4 - Database Design */}
-          <Chapter chapter={CHAPTERS[5]} open={!!open.ch4} toggle={toggle}>
-            <Field label="4.1 Database Tables" id="ch4_tables" value={data.ch4_tables} onChange={update} rows={3} hint="List all tables used in the project." />
-            <Field label="4.2 Table Structure" id="ch4_structure" value={data.ch4_structure} onChange={update} rows={4} hint="Explain columns and data types." />
-            <Field label="4.3 Keys and Constraints" id="ch4_keys" value={data.ch4_keys} onChange={update} rows={3} hint="Explain primary keys, unique fields, etc." />
-            <Field label="4.4 Table Relationships" id="ch4_relations" value={data.ch4_relations} onChange={update} rows={3} hint="Explain how tables are connected." />
-            <Field label="4.5 Sample Data / Records" id="ch4_sample" value={data.ch4_sample} onChange={update} rows={3} hint="Show sample rows/records." />
-          </Chapter>
+              {/* Block Content Inputs */}
+              {(b.type === "chapter" || b.type === "heading1" || b.type === "heading2") && (
+                <input 
+                  className="field-input" 
+                  style={{ fontWeight: b.type === 'chapter' ? 700 : 600, fontSize: b.type === 'chapter' ? '1.05rem' : '0.98rem', marginBottom: 8 }}
+                  value={b.title} 
+                  onChange={(e) => updateBlock(b.id, "title", e.target.value)} 
+                  placeholder={b.type === "chapter" ? "e.g. ABSTRACT or CHAPTER 1" : "e.g. 1.1 Introduction"} 
+                />
+              )}
 
-          {/* Chapter 5 - System Modules */}
-          <Chapter chapter={CHAPTERS[6]} open={!!open.ch5} toggle={toggle}>
-            <p style={{ color: "#64748b", fontSize: "0.82rem", margin: 0 }}>List major functional modules (e.g., Add, Search, Update).</p>
-            {(data.modules || []).map((m, idx) => (
-              <div key={idx} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 12, display: "flex", flexDirection: "column", gap: 10, position: "relative" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#34d399" }}>Module {idx + 1}</span>
-                  {idx > 0 && (
-                    <button onClick={() => removeModule(idx)} style={{ background: "#ef4444", border: "none", padding: "6px", borderRadius: "4px", cursor: "pointer" }}>
-                      <Trash2 size={14} color="white" />
-                    </button>
-                  )}
+              {(b.type === "paragraph" || b.type === "list" || b.type === "chapter" || b.type === "heading1" || b.type === "heading2") && (
+                <textarea 
+                  className="field-input" 
+                  rows={b.type === "paragraph" ? 4 : 2}
+                  value={b.content} 
+                  onChange={(e) => updateBlock(b.id, "content", e.target.value)} 
+                  placeholder={b.type === "list" ? "Point 1\nPoint 2\nPoint 3..." : "Type text content here..."} 
+                />
+              )}
+
+              {b.type === "image" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    style={{ fontSize: "0.82rem", color: "#94a3b8" }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => updateBlock(b.id, "src", reader.result);
+                        reader.readAsDataURL(file);
+                      }
+                    }} 
+                  />
+                  {b.src && <img src={b.src} style={{ maxHeight: "140px", width: "fit-content", borderRadius: 8, marginTop: 4, alignSelf: "center" }} alt="Preview" />}
+                  <input 
+                    className="field-input" 
+                    value={b.title} 
+                    onChange={(e) => updateBlock(b.id, "title", e.target.value)} 
+                    placeholder="Figure Description (e.g. Fig 4.1 Login Screen Dialog)" 
+                  />
                 </div>
-                <Input label="Module Name" value={m.name} onChange={(_, v) => updateModule(idx, "name", v)} />
-                <Field label="Description" value={m.desc} onChange={(_, v) => updateModule(idx, "desc", v)} rows={2} />
-              </div>
-            ))}
-            <button 
-              className="btn-primary" 
-              style={{ alignSelf: "start", marginTop: 5, padding: "6px 12px", fontSize: "0.8rem", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
-              onClick={addModule}
-            >
-              + Add Module
-            </button>
-          </Chapter>
+              )}
+            </div>
+          ))}
+        </div>
 
-          {/* Chapter 6 - Implementation */}
-          <Chapter chapter={CHAPTERS[7]} open={!!open.ch6} toggle={toggle}>
-            <Field label="6.1 Database Connection" id="ch6_connection" value={data.ch6_connection} onChange={update} rows={3} />
-            <Field label="6.2 Input Validation" id="ch6_validation" value={data.ch6_validation} onChange={update} rows={3} />
-            <Field label="6.3 Exception Handling" id="ch6_exception" value={data.ch6_exception} onChange={update} rows={3} />
-          </Chapter>
-
-          {/* Chapter 7 - Output Screens */}
-          <Chapter chapter={CHAPTERS[8]} open={!!open.ch7} toggle={toggle}>
-            <Field label="Output Screens Summary" id="ch7_screens" value={data.ch7_screens} onChange={update} rows={3} hint="Describe screenshots that should be included." />
-          </Chapter>
-
-          {/* Chapter 8 - Conclusion */}
-          <Chapter chapter={CHAPTERS[9]} open={!!open.ch8} toggle={toggle}>
-            <Field label="Conclusion Summary" id="ch8_conclusion" value={data.ch8_conclusion} onChange={update} rows={4} />
-          </Chapter>
-
-          {/* Chapter 9 - Future Enhancements */}
-          <Chapter chapter={CHAPTERS[10]} open={!!open.ch9} toggle={toggle}>
-            <Field label="Future Enhancements" id="ch9_future" value={data.ch9_future} onChange={update} rows={4} hint="Separate items with newlines for bullet points." />
-          </Chapter>
-
-          {/* References */}
-          <Chapter chapter={CHAPTERS[11]} open={!!open.refs} toggle={toggle}>
-            <Field label="References" id="references" value={data.references} onChange={update} rows={5} hint="List references." />
-          </Chapter>
-
-          {/* Appendix */}
-          <Chapter chapter={CHAPTERS[12]} open={!!open.appx} toggle={toggle}>
-            <Field label="Appendix" id="appendix" value={data.appendix} onChange={update} rows={5} hint="Code snippets, queries, screenshots." />
-          </Chapter>
-
+        {/* --- Toolbar Footer --- */}
+        <div style={{ padding: "16px", background: "rgba(0,0,0,0.3)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, marginTop: 24, display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", position: "sticky", bottom: 20, zIndex: 10 }}>
+          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "none", border: "1px solid #ef4444", color: "#fff" }} onClick={() => addBlock("chapter")}>+ Chapter</button>
+          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "none", border: "1px solid #818cf8" }} onClick={() => addBlock("heading1")}>+ H1</button>
+          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "none", border: "1px solid #818cf8" }} onClick={() => addBlock("heading2")}>+ H2</button>
+          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "none", border: "1px solid rgba(255,255,255,0.2)" }} onClick={() => addBlock("paragraph")}>+ Paragraph</button>
+          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "none", border: "1px solid rgba(255,255,255,0.2)" }} onClick={() => addBlock("list")}>+ Bullet List</button>
+          <button className="btn-primary" style={{ padding: "8px 12px", fontSize: "0.84rem", background: "linear-gradient(135deg,#10b981,#059669)" }} onClick={() => addBlock("image")}>+ Photo / Fig</button>
         </div>
 
         {/* Download Button */}
-        <div style={{ marginTop: 40, display: "flex", justifyContent: "center" }}>
+        <div style={{ marginTop: 48, display: "flex", justifyContent: "center" }}>
           <PDFDownloadLink
             document={<CapstoneDocument data={data} />}
-            fileName={filename}
+            fileName={`${(data.projectTitle || "capstone_report").replace(/\s+/g, "_")}.pdf`}
             style={{ textDecoration: "none" }}
           >
             {({ loading, error }) => (
               <button className="btn-primary" style={{ fontSize: "1rem", padding: "16px 40px" }}>
                 {loading
-                  ? <><Sparkles size={18} style={{ animation: "spin 1s linear infinite" }} /> Generating PDF…</>
+                  ? "Generating PDF…"
                   : error
-                  ? "Error — check console"
-                  : <><Download size={18} /> Download {filename}</>}
+                  ? "Error framing canvas"
+                  : <><Download size={18} /> Download pdf</>}
               </button>
             )}
           </PDFDownloadLink>
         </div>
         <p style={{ textAlign: "center", color: "#475569", fontSize: "0.78rem", marginTop: 12 }}>
-          PDF is generated entirely in your browser. No data leaves your device.
+          PDF is compiled frame-by-frame entirely on node clusters. No data leaves your space.
         </p>
       </div>
 
