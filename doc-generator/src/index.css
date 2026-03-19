@@ -101,5 +101,31 @@ body {
 .sidebar-scroll {
   overflow-y: auto;
   max-height: calc(100vh - 120px);
-  padding-right: 6px;
+  padding-right: 4px;
+}
+
+/* Responsive Grid layout framing */
+.app-grid {
+  display: grid;
+  grid-template-columns: 440px 1fr;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-dark);
+}
+
+@media (max-width: 1024px) {
+  .app-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow-y: auto;
+  }
+  .app-sidebar {
+    height: auto !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border);
+  }
+  .app-preview {
+    height: 700px !important;
+    padding: 12px !important;
+  }
 }

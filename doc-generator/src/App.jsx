@@ -176,12 +176,12 @@ export default function App() {
   const filename = `${(data.projectTitle || "capstone_report").replace(/\s+/g, "_")}.pdf`;
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "440px 1fr", height: "100vh", overflow: "hidden" }}>
+    <div className="app-grid">
       {/* ─── Left Sidebar (Controls) ─── */}
-      <div style={{ 
+      <div className="app-sidebar" style={{ 
         display: "flex", flexDirection: "column", 
-        background: "#ffffff", borderRight: "1px solid #e2e8f0", 
-        padding: "20px", height: "100vh", overflow: "hidden" 
+        background: "#ffffff",
+        padding: "20px", overflow: "hidden" 
       }}>
         
         {/* Sidebar Header */}
@@ -309,7 +309,7 @@ export default function App() {
       </div>
 
       {/* ─── Right Pane (Live PDF Preview) ─── */}
-      <div style={{ flex: 1, background: "#cbd5e1", padding: "16px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+      <div className="app-preview" style={{ flex: 1, background: "#cbd5e1", padding: "16px", display: "flex", justifyContent: "center", alignItems: "center" }}>
         <PDFViewer style={{ width: "100%", height: "100%", border: "none", borderRadius: "6px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)" }}>
           <CapstoneDocument data={data} />
         </PDFViewer>
