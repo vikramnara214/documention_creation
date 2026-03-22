@@ -400,7 +400,7 @@ const TocPage = ({ blocks, abstract }) => {
 //   break="before"  on the chapter-title <View>, which is the react-pdf way
 //   to say "always start this element on a fresh page".
 //
-const BodyPages = ({ blocks }) => {
+const BodyPages = ({ blocks, abstract }) => {
   const cnt = { ch: 0, h1: 0, h2: 0 };
 
   return (
@@ -410,7 +410,7 @@ const BodyPages = ({ blocks }) => {
       {/* Offset by -2 because cover=page1, toc=page2, body starts at 3     */}
       <Text
         style={s.pageNumber}
-        render={({ pageNumber }) => String(pageNumber - 2)}
+        render={({ pageNumber }) => String(pageNumber - (abstract ? 3 : 2))}
         fixed
       />
 
@@ -519,6 +519,6 @@ export const CapstoneDocument = ({ data }) => (
     <CoverPage data={data} />
     {data.abstract && <AbstractPage abstract={data.abstract} />}
     <TocPage blocks={data.blocks} abstract={!!data.abstract} />
-    <BodyPages blocks={data.blocks} />
+    <BodyPages blocks={data.blocks} abstract={!!data.abstract} />
   </Document>
 );
