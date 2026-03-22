@@ -167,6 +167,15 @@ export default function App() {
     setReady(false);
   }, []);
 
+  const insertBlock = useCallback((idx, type) => {
+    setData((prev) => {
+      const list = [...(prev.blocks || [])];
+      list.splice(idx, 0, { id: Date.now().toString(), type, title: "", content: "", src: "" });
+      return { ...prev, blocks: list };
+    });
+    setReady(false);
+  }, []);
+
   const updateBlock = useCallback((id, field, val) => {
     setData((prev) => ({
       ...prev,
@@ -280,8 +289,22 @@ export default function App() {
               let cnt = { ch: 0, h1: 0, h2: 0 };
               return (data.blocks || []).map((b, bIdx) => {
                 const label = getNumberedLabel(b, cnt);
+                const btnStyle = { padding: "2px 4px", fontSize: "0.62rem", background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: 4, cursor: "pointer", color: "#64748b", fontWeight: 600, boxShadow: "0 1px 1px rgba(0,0,0,0.05)" };
                 return (
-              <div key={b.id} className="glass" style={{ padding: "12px", borderLeft: b.type === 'chapter' ? '3px solid #ef4444' : '1px solid var(--border)' }}>
+                  <div key={b.id}>
+                    {/* Insert Divider */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 3, margin: "2px 0 6px", opacity: 0.85 }}>
+                      <div style={{ height: "1px", background: "#e2e8f0", flex: 1 }} />
+                      <button onClick={() => insertBlock(bIdx, 'paragraph')} style={btnStyle}>+¶</button>
+                      <button onClick={() => insertBlock(bIdx, 'heading1')} style={btnStyle}>+H1</button>
+                      <button onClick={() => insertBlock(bIdx, 'heading2')} style={btnStyle}>+H2</button>
+                      <button onClick={() => insertBlock(bIdx, 'list')} style={btnStyle}>+List</button>
+                      <button onClick={() => insertBlock(bIdx, 'image')} style={btnStyle}>+Img</button>
+                      <button onClick={() => insertBlock(bIdx, 'page_break')} style={btnStyle}>+Break</button>
+                      <div style={{ height: "1px", background: "#e2e8f0", flex: 1 }} />
+                    </div>
+                    
+                    <div className="glass" style={{ padding: "12px", borderLeft: b.type === 'chapter' ? '3px solid #ef4444' : '1px solid var(--border)' }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                   <span style={{ fontSize: "0.68rem", fontWeight: 700, color: b.type === 'chapter' ? '#dc2626' : b.type==='image' ? '#059669' : '#2563eb', textTransform: "uppercase" }}>
                     {label}
@@ -370,8 +393,9 @@ export default function App() {
                   </div>
                 )}
               </div>
-                );
-              });
+            </div>
+          );
+        });
             })()}
           </div>
 
