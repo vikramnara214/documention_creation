@@ -308,13 +308,23 @@ export default function App() {
                         const val = e.target.value;
                         const newVal = val.substring(0, start) + "\t" + val.substring(end);
                         updateBlock(b.id, "content", newVal);
-                        // Prevent cursor jump backwards on state updates
                         setTimeout(() => {
                           e.target.selectionStart = e.target.selectionEnd = start + 1;
                         }, 0);
                       }
                     }}
                     placeholder={b.type === "list" ? "Point 1\nPoint 2\nPoint 3..." : "Type text content..."} 
+                  />
+                )}
+                
+                {b.type === "code" && (
+                  <textarea 
+                    className="field-input" 
+                    rows={6}
+                    style={{ fontSize: "0.82rem", padding: "6px 8px", fontFamily: "Courier New, monospace", background: "#f8fafc" }}
+                    value={b.content} 
+                    onChange={(e) => updateBlock(b.id, "content", e.target.value)} 
+                    placeholder="Enter support code or paste Appendix text..." 
                   />
                 )}
 
@@ -348,6 +358,7 @@ export default function App() {
           <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }} onClick={() => addBlock("paragraph")}>+ Text</button>
           <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }} onClick={() => addBlock("list")}>+ List</button>
           <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#d1fae5", color: "#059669", border: "1px solid #a7f3d0" }} onClick={() => addBlock("image")}>+ Photo</button>
+          <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#fef08a", color: "#854d0e", border: "1px solid #fde047" }} onClick={() => addBlock("code")}>+ Code</button>
         </div>
 
         {/* Credits */}
@@ -449,6 +460,19 @@ export default function App() {
                 {b.type === "heading1" && <div className="doc-h1">{label} {b.title}</div>}
                 {b.type === "heading2" && <div className="doc-h2">{label} {b.title}</div>}
                 {b.type === "paragraph" && <p className="doc-p">{b.content}</p>}
+                {b.type === "code" && (
+                  <pre style={{ 
+                    fontFamily: "Courier New, monospace", 
+                    fontSize: "11pt", 
+                    background: "#f8fafc", 
+                    padding: "10px", 
+                    borderRadius: "4px", 
+                    whiteSpace: "pre-wrap", 
+                    marginLeft: "36px", 
+                    marginBottom: "12px",
+                    border: "1px solid #e2e8f0"
+                  }}>{b.content}</pre>
+                )}
                 {b.type === "list" && (
                   <ul className="doc-ul">
                     {(b.content || "").split('\n').filter(l => l.trim()).map((l, i) => <li key={i}>{l}</li>)}

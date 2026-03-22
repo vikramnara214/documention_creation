@@ -136,7 +136,7 @@ body {
   width: 100%;
   max-width: 800px;
   min-height: 1123px; /* A4 aspect ratio approximation */
-  padding: 40px 50px;
+  padding: 1in 1in 1in 1.5in; /* 1in Top, 1in Right, 1in Bottom, 1.5in Left (Binding) */
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
   border-radius: 4px;
   font-family: 'Times New Roman', Times, serif;

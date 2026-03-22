@@ -209,13 +209,15 @@ export const CapstoneDocument = ({ data }) => (
             {b.content && b.type !== 'image' && (
               b.type === 'list' 
                 ? <BulletList items={b.content} /> 
-                : <BodyText>{b.content}</BodyText>
+                : b.type === 'code'
+                  ? <Text style={{ fontFamily: "Courier", fontSize: 11, padding: 8, backgroundColor: "#f4f4f4", marginBottom: 6, marginLeft: 36, whiteSpace: "pre-wrap" }}>{b.content}</Text>
+                  : <BodyText>{b.content}</BodyText>
             )}
 
             {b.type === "image" && b.src && (
               <View style={{ alignItems: "center", marginTop: 10, marginBottom: 10 }}>
                 <Image src={b.src} style={{ maxHeight: 220, maxWidth: "80%", marginBottom: 6, objectFit: "contain" }} />
-                {b.title && <Text style={{ fontSize: 11, fontFamily: "Times-Bold", textAlign: "center" }}>{b.title}</Text>}
+                {b.title && <Text style={{ fontSize: 11, fontFamily: "Times-Italic", textAlign: "center" }}>{b.title}</Text>}
               </View>
               )}
             </View>
