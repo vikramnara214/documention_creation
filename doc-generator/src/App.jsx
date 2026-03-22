@@ -351,6 +351,16 @@ export default function App() {
                     }} />
                     {b.src && <img src={b.src} style={{ maxHeight: "100px", width: "fit-content", borderRadius: 6, margin: "4px auto" }} />}
                     <input className="field-input" style={{ fontSize: "0.82rem", padding: "6px 8px" }} value={b.title} onChange={(e) => updateBlock(b.id, "title", e.target.value)} placeholder="Figure Caption" />
+                    <div style={{ marginTop: 4 }}>
+                      <label style={{ fontSize: "0.72rem", color: "#64748b", fontWeight: 500 }}>Image Width: {b.width || 100}%</label>
+                      <input 
+                        type="range" 
+                        min="20" max="100" step="5" 
+                        value={b.width || 100} 
+                        onChange={(e) => updateBlock(b.id, "width", parseInt(e.target.value))} 
+                        style={{ width: "100%", height: "4px", accentColor: "#2563eb", cursor: "pointer", marginTop: 2 }} 
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -571,7 +581,7 @@ export default function App() {
                 )}
                 {b.type === "image" && (
                   <div style={{ textAlign: "center", margin: "20px 0" }}>
-                    {b.src && <img src={b.src} style={{ maxWidth: "100%", maxHeight: "360px", borderRadius: 4 }} alt="Preview" />}
+                    {b.src && <img src={b.src} style={{ width: `${b.width || 100}%`, maxWidth: "100%", maxHeight: "360px", borderRadius: 4 }} alt="Preview" />}
                     <p style={{ fontSize: "11pt", fontStyle: "italic", marginTop: 6, color: "#4b5563" }}>{b.title}</p>
                   </div>
                 )}

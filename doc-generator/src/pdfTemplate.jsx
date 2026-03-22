@@ -494,7 +494,7 @@ const BodyPages = ({ blocks }) => {
         if (b.type === "image" && b.src) {
           return (
             <View key={b.id} style={s.imageWrapper} wrap={false}>
-              <Image src={b.src} style={s.image} />
+              <Image src={b.src} style={[s.image, { width: `${b.width || 100}%` }]} />
               {b.title ? (
                 <Text style={s.imageCaption}>{b.title}</Text>
               ) : null}
