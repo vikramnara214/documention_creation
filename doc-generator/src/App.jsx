@@ -507,18 +507,41 @@ export default function App() {
           let pCnt = { ch: 0, h1: 0, h2: 0 };
           const pages = [];
           let currentBlocks = [];
+          let currentHeight = 0; // Heuristic height counter in px
 
           (data.blocks || []).forEach((b) => {
             const label = getNumberedLabel(b, pCnt);
             
-            if ((b.type === "chapter" || b.type === "page_break") && currentBlocks.length > 0) {
+            // Approximate block heights for A4 pagination
+            let blockHeight = 30;
+            if (b.type === "chapter") blockHeight = 110;
+            else if (b.type === "heading1") blockHeight = 70;
+            else if (b.type === "heading2") blockHeight = 50;
+            else if (b.type === "paragraph" && b.content) {
+              const lines = Math.ceil(b.content.length / 92); // ~92 chars per line
+              blockHeight = lines * 22 + 18; 
+            } else if (b.type === "list" && b.content) {
+              const lines = b.content.split('\n').filter(l => l.trim()).length;
+              blockHeight = lines * 22 + 12;
+            } else if (b.type === "code" && b.content) {
+              const lines = b.content.split('\n').length;
+              blockHeight = lines * 16 + 32;
+            } else if (b.type === "image") {
+              blockHeight = 280;
+            }
+
+            const isForced = b.type === "chapter" || b.type === "page_break";
+            const isOverflown = (currentHeight + blockHeight) > 850; // Threshold for content space
+
+            if ((isForced || isOverflown) && currentBlocks.length > 0) {
               pages.push(
-                <div className="paper-sheet" style={{ textAlign: "left", position: "relative" }} key={`page-${pCnt.ch}`}>
+                <div className="paper-sheet" style={{ textAlign: "left", position: "relative", marginBottom: "20px" }} key={`page-${pages.length}`}>
                   {currentBlocks}
                   <div style={{ position: "absolute", bottom: 40, left: 100, right: 100, textAlign: "center", fontSize: "10pt", color: "#555", fontFamily: "serif" }}>{pages.length + 1}</div>
                 </div>
               );
               currentBlocks = [];
+              currentHeight = 0; // Reset height
             }
 
             currentBlocks.push(
@@ -554,6 +577,7 @@ export default function App() {
                 )}
               </div>
             );
+            currentHeight += blockHeight; // Accumulate height for auto-pagination
           });
 
           if (currentBlocks.length > 0) {
