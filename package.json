@@ -1,0 +1,7 @@
+{
+  "name": "capstone-report-generator",
+  "private": true,
+  "scripts": {
+    "build": "cd doc-generator && npm install && npm run build"
+  }
+}
