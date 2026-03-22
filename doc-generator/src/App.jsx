@@ -419,9 +419,8 @@ export default function App() {
             
             <div style={{ fontSize: "12pt", marginTop: "6pt", textAlign: "center" }}>
               {(data.students || []).map((s, idx) => (
-                <div key={idx} style={{ marginBottom: "8pt" }}>
-                  <div>{s.name}</div>
-                  {s.roll && <div style={{ fontSize: "10pt", color: "#000000" }}>{s.roll}</div>}
+                <div key={idx} style={{ marginBottom: "4pt" }}>
+                  {s.name} {s.roll ? `(${s.roll})` : ""}
                 </div>
               ))}
             </div>
