@@ -391,13 +391,22 @@ export default function App() {
         </div>
 
         {/* ==================== PAGE 1: COVER ==================== */}
-        <div className="paper-sheet" style={{ textAlign: "left" }}>
-          <div style={{ textAlign: "center", marginBottom: 40, display: "flex", flexDirection: "column", gap: 10, textTransform: "uppercase", fontWeight: "bold" }}>
-            <div style={{ fontSize: "16pt", margin: "30px 0" }}>{data.institutionName || "[INSTITUTION NAME]"}</div>
+        <div className="paper-sheet" style={{ textAlign: "left", position: "relative" }}>
+          <div style={{ 
+            height: "calc(100% - 100px)", 
+            display: "flex", 
+            flexDirection: "column", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            gap: 16, 
+            textTransform: "uppercase", 
+            fontWeight: "bold" 
+          }}>
+            <div style={{ fontSize: "16pt", marginBottom: 30 }}>{data.institutionName || "[INSTITUTION NAME]"}</div>
             <div style={{ fontSize: "12pt", letterSpacing: "1px" }}>A PROJECT REPORT ON</div>
             <div style={{ fontSize: "16pt", margin: "15px 0", color: "#1e3a8a" }}>{data.projectTitle || "[PROJECT TITLE]"}</div>
             <div style={{ fontSize: "11pt", marginTop: 15 }}>Submitted by</div>
-            <div style={{ fontSize: "11pt", margin: "5px 0", textTransform: "none", fontWeight: "normal" }}>
+            <div style={{ fontSize: "11pt", margin: "5px 0", textTransform: "none", fontWeight: "normal", textAlign: "center" }}>
               {(data.students || []).map((s, idx) => (
                 <div key={idx} style={{ marginBottom: 4 }}>{s.name} {s.roll ? `(${s.roll})` : ""}</div>
               ))}
@@ -410,10 +419,10 @@ export default function App() {
         </div>
 
         {/* ==================== PAGE 2: APPENDIX / ToC ==================== */}
-        <div className="paper-sheet" style={{ textAlign: "left" }}>
+        <div className="paper-sheet" style={{ textAlign: "left", position: "relative" }}>
           <div style={{ marginTop: 20, marginBottom: 40 }}>
             <div style={{ fontSize: "14pt", fontWeight: "bold", textTransform: "uppercase", textAlign: "center", marginBottom: 30, fontFamily: "serif" }}>
-              APPENDIX / TABLE OF CONTENTS
+              TABLE OF CONTENTS
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 10px" }}>
               {(() => {
@@ -433,6 +442,7 @@ export default function App() {
                   });
               })()}
             </div>
+            <div style={{ position: "absolute", bottom: 40, left: 100, right: 100, textAlign: "center", fontSize: "10pt", color: "#555", fontFamily: "serif" }}>ii</div>
           </div>
         </div>
 
@@ -447,8 +457,9 @@ export default function App() {
             
             if (b.type === "chapter" && currentBlocks.length > 0) {
               pages.push(
-                <div className="paper-sheet" style={{ textAlign: "left" }} key={`page-${pCnt.ch}`}>
+                <div className="paper-sheet" style={{ textAlign: "left", position: "relative" }} key={`page-${pCnt.ch}`}>
                   {currentBlocks}
+                  <div style={{ position: "absolute", bottom: 40, left: 100, right: 100, textAlign: "center", fontSize: "10pt", color: "#555", fontFamily: "serif" }}>{pages.length + 1}</div>
                 </div>
               );
               currentBlocks = [];
@@ -490,8 +501,9 @@ export default function App() {
 
           if (currentBlocks.length > 0) {
             pages.push(
-              <div className="paper-sheet" style={{ textAlign: "left" }} key={`page-last`}>
+              <div className="paper-sheet" style={{ textAlign: "left", position: "relative" }} key={`page-last`}>
                 {currentBlocks}
+                <div style={{ position: "absolute", bottom: 40, left: 100, right: 100, textAlign: "center", fontSize: "10pt", color: "#555", fontFamily: "serif" }}>{pages.length + 1}</div>
               </div>
             );
           }
