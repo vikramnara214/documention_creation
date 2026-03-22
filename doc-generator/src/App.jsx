@@ -393,28 +393,32 @@ export default function App() {
         {/* ==================== PAGE 1: COVER ==================== */}
         <div className="paper-sheet" style={{ textAlign: "left", position: "relative" }}>
           <div style={{ 
-            height: "calc(100% - 100px)", 
+            height: "100%", 
             display: "flex", 
             flexDirection: "column", 
             alignItems: "center", 
             justifyContent: "center", 
             gap: 16, 
-            textTransform: "uppercase", 
-            fontWeight: "bold" 
+            fontFamily: "'Times New Roman', Times, serif",
+            color: "#000000"
           }}>
-            <div style={{ fontSize: "16pt", marginBottom: 30 }}>{data.institutionName || "[INSTITUTION NAME]"}</div>
-            <div style={{ fontSize: "12pt", letterSpacing: "1px" }}>A PROJECT REPORT ON</div>
-            <div style={{ fontSize: "16pt", margin: "15px 0", color: "#1e3a8a" }}>{data.projectTitle || "[PROJECT TITLE]"}</div>
-            <div style={{ fontSize: "11pt", marginTop: 15 }}>Submitted by</div>
-            <div style={{ fontSize: "11pt", margin: "5px 0", textTransform: "none", fontWeight: "normal", textAlign: "center" }}>
+            <div style={{ fontSize: "16pt", fontFamily: "'Times New Roman', Times, serif", fontWeight: "bold", textAlign: "center", textTransform: "uppercase" }}>
+              {data.institutionName || "[INSTITUTION NAME]"}
+            </div>
+            <div style={{ fontSize: "14pt", marginTop: 40, textAlign: "center" }}>A Capstone Project Report</div>
+            <div style={{ fontSize: "16pt", fontFamily: "'Times New Roman', Times, serif", fontWeight: "bold", marginTop: 20, textAlign: "center", textTransform: "uppercase" }}>
+              {data.projectTitle || "[PROJECT TITLE]"}
+            </div>
+            <div style={{ fontSize: "12pt", marginTop: 30, textAlign: "center" }}>Submitted by</div>
+            <div style={{ fontSize: "12pt", marginTop: 6, margin: "5px 0", textAlign: "center" }}>
               {(data.students || []).map((s, idx) => (
                 <div key={idx} style={{ marginBottom: 4 }}>{s.name} {s.roll ? `(${s.roll})` : ""}</div>
               ))}
             </div>
-            <div style={{ fontSize: "11pt", marginTop: 15 }}>Under the guidance of</div>
-            <div style={{ fontSize: "11pt", textTransform: "none", fontWeight: "normal" }}>{data.guideName || "[GUIDE NAME]"}</div>
-            <div style={{ fontSize: "12pt", marginTop: 40, textTransform: "uppercase" }}>{data.department || "[DEPARTMENT]"}</div>
-            <div style={{ fontSize: "12pt" }}>{data.academicYear || "[ACADEMIC YEAR]"}</div>
+            <div style={{ fontSize: "12pt", marginTop: 20, textAlign: "center" }}>Under the guidance of</div>
+            <div style={{ fontSize: "12pt", textAlign: "center" }}>{data.guideName || "[GUIDE NAME]"}</div>
+            <div style={{ fontSize: "12pt", marginTop: 30, textTransform: "uppercase", textAlign: "center" }}>{data.department || "[DEPARTMENT]"}</div>
+            <div style={{ fontSize: "12pt", textAlign: "center" }}>{data.academicYear || "[ACADEMIC YEAR]"}</div>
           </div>
         </div>
 
