@@ -398,27 +398,47 @@ export default function App() {
             flexDirection: "column", 
             alignItems: "center", 
             justifyContent: "center", 
-            gap: 16, 
             fontFamily: "'Times New Roman', Times, serif",
             color: "#000000"
           }}>
-            <div style={{ fontSize: "16pt", fontFamily: "'Times New Roman', Times, serif", fontWeight: "bold", textAlign: "center", textTransform: "uppercase" }}>
+            <div style={{ fontSize: "16pt", fontWeight: "bold", textAlign: "center", textTransform: "uppercase", marginBottom: "8pt" }}>
               {data.institutionName || "[INSTITUTION NAME]"}
             </div>
-            <div style={{ fontSize: "14pt", marginTop: 40, textAlign: "center" }}>A Capstone Project Report</div>
-            <div style={{ fontSize: "16pt", fontFamily: "'Times New Roman', Times, serif", fontWeight: "bold", marginTop: 20, textAlign: "center", textTransform: "uppercase" }}>
+            
+            <div style={{ fontSize: "14pt", marginTop: "32pt", textAlign: "center", marginBottom: "8pt" }}>
+              A Capstone Project Report
+            </div>
+            
+            <div style={{ fontSize: "16pt", fontWeight: "bold", marginTop: "16pt", textAlign: "center", textTransform: "uppercase", marginBottom: "24pt" }}>
               {data.projectTitle || "[PROJECT TITLE]"}
             </div>
-            <div style={{ fontSize: "12pt", marginTop: 30, textAlign: "center" }}>Submitted by</div>
-            <div style={{ fontSize: "12pt", marginTop: 6, margin: "5px 0", textAlign: "center" }}>
+            
+            <div style={{ fontSize: "12pt", marginTop: "24pt", textAlign: "center" }}>
+              Submitted by
+            </div>
+            
+            <div style={{ fontSize: "12pt", marginTop: "6pt", textAlign: "center" }}>
               {(data.students || []).map((s, idx) => (
-                <div key={idx} style={{ marginBottom: 4 }}>{s.name} {s.roll ? `(${s.roll})` : ""}</div>
+                <div key={idx} style={{ marginBottom: "8pt" }}>
+                  <div>{s.name}</div>
+                  {s.roll && <div style={{ fontSize: "10pt", color: "#000000" }}>{s.roll}</div>}
+                </div>
               ))}
             </div>
-            <div style={{ fontSize: "12pt", marginTop: 20, textAlign: "center" }}>Under the guidance of</div>
-            <div style={{ fontSize: "12pt", textAlign: "center" }}>{data.guideName || "[GUIDE NAME]"}</div>
-            <div style={{ fontSize: "12pt", marginTop: 30, textTransform: "uppercase", textAlign: "center" }}>{data.department || "[DEPARTMENT]"}</div>
-            <div style={{ fontSize: "12pt", textAlign: "center" }}>{data.academicYear || "[ACADEMIC YEAR]"}</div>
+            
+            <div style={{ fontSize: "12pt", marginTop: "24pt", textAlign: "center" }}>
+              Under the guidance of
+            </div>
+            <div style={{ fontSize: "12pt", textAlign: "center", marginTop: "4pt" }}>
+              {data.guideName || "[GUIDE NAME]"}
+            </div>
+            
+            <div style={{ fontSize: "12pt", marginTop: "24pt", textTransform: "uppercase", textAlign: "center" }}>
+              {data.department || "[DEPARTMENT]"}
+            </div>
+            <div style={{ fontSize: "12pt", textAlign: "center", marginTop: "4pt" }}>
+              {data.academicYear || "[ACADEMIC YEAR]"}
+            </div>
           </div>
         </div>
 
