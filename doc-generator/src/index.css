@@ -143,6 +143,10 @@ body {
   color: #000000;
   line-height: 1.5;
   overflow-y: visible;
+  position: relative;
+  /* Visual guide for automatic page breaks every 1123px down the sheet wrapper */
+  background-image: linear-gradient(to bottom, transparent 1122px, #e2e8f0 1122px, #e2e8f0 1123px, transparent 1123px);
+  background-size: 100% 1123px;
 }
 
 .doc-chapter {
