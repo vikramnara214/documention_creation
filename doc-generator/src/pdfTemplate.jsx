@@ -349,8 +349,17 @@ const CoverPage = ({ data }) => (
   </Page>
 );
 
+// ─── Abstract Page ───────────────────────────────────────────────────────────
+const AbstractPage = ({ abstract }) => (
+  <Page size="A4" style={s.page}>
+    <Text style={s.tocTitle}>ABSTRACT</Text>
+    <Text style={s.paragraph}>{abstract}</Text>
+    <Text style={s.pageNumber}>ii</Text>
+  </Page>
+);
+
 // ─── Table of Contents ───────────────────────────────────────────────────────
-const TocPage = ({ blocks }) => {
+const TocPage = ({ blocks, abstract }) => {
   const tocCnt = { ch: 0, h1: 0, h2: 0 };
   const tocItems = (blocks || []).filter(
     (b) => b.type === "chapter" || b.type === "heading1"
@@ -377,7 +386,7 @@ const TocPage = ({ blocks }) => {
         );
       })}
 
-      <Text style={s.pageNumber}>ii</Text>
+      <Text style={s.pageNumber}>{abstract ? "iii" : "ii"}</Text>
     </Page>
   );
 };
@@ -509,7 +518,8 @@ export const CapstoneDocument = ({ data }) => (
     }
   >
     <CoverPage data={data} />
-    <TocPage blocks={data.blocks} />
+    {data.abstract && <AbstractPage abstract={data.abstract} />}
+    <TocPage blocks={data.blocks} abstract={!!data.abstract} />
     <BodyPages blocks={data.blocks} />
   </Document>
 );

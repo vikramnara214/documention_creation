@@ -237,6 +237,17 @@ export default function App() {
               <Input label="Project Title" value={data.projectTitle} onChange={(_, v) => update("projectTitle", v)} />
               <Input label="Guide / Supervisor Name" value={data.guideName} onChange={(_, v) => update("guideName", v)} />
               <Input label="Academic Year" value={data.academicYear} onChange={(_, v) => update("academicYear", v)} placeholder="2024–2025" />
+              <div style={{ marginTop: 8 }}>
+                <label style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 600 }}>Abstract</label>
+                <textarea 
+                  className="field-input" 
+                  rows={4} 
+                  value={data.abstract || ""} 
+                  onChange={(e) => update("abstract", e.target.value)} 
+                  placeholder="Type Abstract text here..." 
+                  style={{ fontSize: "0.82rem", padding: "6px 8px", marginTop: 4 }} 
+                />
+              </div>
             </div>
             
             <div style={{ marginTop: 16 }}>
@@ -448,6 +459,21 @@ export default function App() {
           </div>
         </div>
 
+        {/* ==================== PAGE 1.5: ABSTRACT ==================== */}
+        {data.abstract && (
+          <div className="paper-sheet" style={{ textAlign: "left", position: "relative" }}>
+            <div style={{ marginTop: 20, marginBottom: 40 }}>
+              <div style={{ fontSize: "14pt", fontWeight: "bold", textTransform: "uppercase", textAlign: "center", marginBottom: 30, fontFamily: "serif" }}>
+                ABSTRACT
+              </div>
+              <p style={{ fontSize: "12pt", textAlign: "justify", lineHeight: 1.6, textIndent: "0.5in", fontFamily: "serif", padding: "0 10px" }}>
+                {data.abstract}
+              </p>
+            </div>
+            <div style={{ position: "absolute", bottom: 40, left: 100, right: 100, textAlign: "center", fontSize: "10pt", color: "#555", fontFamily: "serif" }}>ii</div>
+          </div>
+        )}
+
         {/* ==================== PAGE 2: APPENDIX / ToC ==================== */}
         <div className="paper-sheet" style={{ textAlign: "left", position: "relative" }}>
           <div style={{ marginTop: 20, marginBottom: 40 }}>
@@ -472,7 +498,7 @@ export default function App() {
                   });
               })()}
             </div>
-            <div style={{ position: "absolute", bottom: 40, left: 100, right: 100, textAlign: "center", fontSize: "10pt", color: "#555", fontFamily: "serif" }}>ii</div>
+            <div style={{ position: "absolute", bottom: 40, left: 100, right: 100, textAlign: "center", fontSize: "10pt", color: "#555", fontFamily: "serif" }}>{data.abstract ? "iii" : "ii"}</div>
           </div>
         </div>
 
