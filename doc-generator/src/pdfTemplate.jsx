@@ -4,11 +4,18 @@
  * Drop this file into  doc-generator/src/pdfTemplate.jsx
  * (replace whatever was there before).
  *
- * It mirrors the HTML preview in App.jsx 1-to-1:
- *   • Cover page  – centred, Times New Roman, same font sizes
- *   • Table of Contents page  – dotted leader lines, bold chapters
- *   • Body pages  – one chapter per page break, correct heading hierarchy,
- *                    paragraphs, numbered lists, images, code blocks
+ * Implements Cornerstone Project Report Formatting Guidelines:
+ *   §1  A4 Portrait
+ *   §2  Margins: Top 1in | Bottom 1in | Left 1.5in (binding) | Right 1in
+ *   §3  Font: Times New Roman throughout
+ *   §4  Chapter 16pt Bold UPPERCASE | H1 14pt Bold | H2 12pt Bold
+ *       Normal 12pt Regular | Captions 11pt Bold Italic
+ *   §5  Normal text 1.5× spacing | Headings single spacing | 6pt after §
+ *   §6  Normal text Justified | Chapter headings Centered | Section headings Left
+ *   §7  First-line indent 0.5in | 6pt paragraph spacing
+ *   §8  Each chapter starts on a new page
+ *   §9  Page numbers bottom-center; Roman (i,ii…) prelims; Arabic (1,2…) body
+ *   §12 Code: Courier New, 10pt
  *
  * Uses @react-pdf/renderer (already in your package.json).
  */
@@ -27,39 +34,61 @@ import {
 const PAGE_W = 595.28;
 const PAGE_H = 841.89;
 
-// Margins match the HTML "paper-sheet" look (roughly 1 inch / 72 pt each side)
-const M_TOP    = 72; // 1 inch
-const M_BOTTOM = 72; // 1 inch
-const M_LEFT   = 108; // 1.5 inch (Binding)
-const M_RIGHT  = 72; // 1 inch
-const CONTENT_W = PAGE_W - M_LEFT - M_RIGHT;   // ~451 pt
+// Margins per Cornerstone guidelines:
+//   Top: 1 inch = 72 pt
+//   Bottom: 1 inch = 72 pt
+//   Left: 1.5 inches (binding) = 108 pt
+//   Right: 1 inch = 72 pt
+const M_TOP    = 72;
+const M_BOTTOM = 72;
+const M_LEFT   = 108;
+const M_RIGHT  = 72;
+const CONTENT_W = PAGE_W - M_LEFT - M_RIGHT;   // 595.28 - 108 - 72 = ~415 pt
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
+// ─── Styles (Cornerstone Formatting Guidelines) ──────────────────────────────
+//
+//  Font sizes:
+//    Chapter titles  → 16 pt, Bold, UPPERCASE, center-aligned
+//    Main headings   → 14 pt, Bold, left-aligned          (1.1, 2.1 …)
+//    Sub-headings    → 12 pt, Bold, left-aligned          (1.1.1 …)
+//    Normal text     → 12 pt, Regular, justified
+//    Table headings  → 12 pt, Bold
+//    Figure captions → 11 pt, Bold, Italic, center
+//    Code            → Courier New, 10–11 pt
+//
+//  Spacing:
+//    Normal text     → 1.5 line spacing
+//    Headings        → single (1.0) line spacing
+//    Between §       → 6 pt after paragraph + one blank line (≈ marginBottom 18 pt)
+//    First-line indent → 0.5 inch = 36 pt
+//
+//  Page numbers: bottom-center; Roman for prelims, Arabic for chapters
+//
 const s = StyleSheet.create({
   page: {
     fontFamily: "Times-Roman",
     fontSize: 12,
     paddingTop:    M_TOP,
-    paddingBottom: M_BOTTOM,
+    paddingBottom: M_BOTTOM + 24,   // extra room for page-number footer
     paddingLeft:   M_LEFT,
     paddingRight:  M_RIGHT,
     color: "#000000",
     backgroundColor: "#ffffff",
   },
 
-  // ── Page number footer ──
+  // ── Page number – bottom center ──────────────────────────────────────────
   pageNumber: {
     position: "absolute",
-    bottom: 30,
+    bottom: 24,          // sits within the 1-inch bottom margin
     left: 0,
     right: 0,
     textAlign: "center",
-    fontSize: 10,
-    color: "#555555",
+    fontSize: 12,
+    color: "#000000",
     fontFamily: "Times-Roman",
   },
 
-  // ── Cover ──
+  // ── Cover page ───────────────────────────────────────────────────────────
   coverPage: {
     flex: 1,
     alignItems: "center",
@@ -70,11 +99,14 @@ const s = StyleSheet.create({
     fontFamily: "Times-Bold",
     textAlign: "center",
     textTransform: "uppercase",
+    lineHeight: 1,
     marginBottom: 8,
   },
   coverSubtitle: {
     fontSize: 14,
+    fontFamily: "Times-Roman",
     textAlign: "center",
+    lineHeight: 1,
     marginTop: 32,
     marginBottom: 8,
   },
@@ -83,132 +115,172 @@ const s = StyleSheet.create({
     fontFamily: "Times-Bold",
     textAlign: "center",
     textTransform: "uppercase",
+    lineHeight: 1,
     marginTop: 16,
     marginBottom: 24,
   },
   coverLabel: {
     fontSize: 12,
+    fontFamily: "Times-Roman",
     textAlign: "center",
+    lineHeight: 1,
     marginTop: 24,
   },
   coverValue: {
     fontSize: 12,
+    fontFamily: "Times-Roman",
     textAlign: "center",
+    lineHeight: 1,
     marginTop: 4,
   },
   coverDept: {
     fontSize: 12,
+    fontFamily: "Times-Roman",
     textAlign: "center",
     textTransform: "uppercase",
+    lineHeight: 1,
     marginTop: 24,
   },
   coverYear: {
     fontSize: 12,
+    fontFamily: "Times-Roman",
     textAlign: "center",
+    lineHeight: 1,
     marginTop: 4,
   },
 
-  // ── Table of Contents ──
+  // ── Table of Contents ────────────────────────────────────────────────────
   tocTitle: {
-    fontSize: 14,
+    // Treated as a chapter-level heading: 16 pt Bold UPPERCASE center
+    fontSize: 16,
     fontFamily: "Times-Bold",
     textTransform: "uppercase",
     textAlign: "center",
+    lineHeight: 1,           // single spacing for headings
     marginBottom: 24,
     marginTop: 8,
   },
   tocRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   tocChapterText: {
     fontSize: 12,
     fontFamily: "Times-Bold",
+    lineHeight: 1,
   },
   tocHeadingText: {
     fontSize: 12,
+    fontFamily: "Times-Roman",
+    lineHeight: 1,
     paddingLeft: 16,
   },
   tocDots: {
     flex: 1,
     borderBottomWidth: 1,
     borderBottomStyle: "dotted",
-    borderBottomColor: "#94a3b8",
+    borderBottomColor: "#000000",
     marginBottom: 3,
     marginLeft: 6,
     marginRight: 6,
   },
   tocPage: {
-    fontSize: 10,
-    color: "#64748b",
+    fontSize: 12,
+    fontFamily: "Times-Roman",
+    color: "#000000",
   },
 
-  // ── Body content ──
+  // ── Body content ─────────────────────────────────────────────────────────
+
+  // Chapter title: 16 pt Bold UPPERCASE center-aligned, single spacing
   chapterTitle: {
     fontSize: 16,
     fontFamily: "Times-Bold",
     textTransform: "uppercase",
-    marginBottom: 16,
+    textAlign: "center",          // §6: chapter headings center-aligned
+    lineHeight: 1,                // §5: headings single spacing
+    marginBottom: 18,             // one blank line worth of space after
     marginTop: 4,
   },
+
+  // Main heading (1.1): 14 pt Bold left-aligned, single spacing
   heading1: {
     fontSize: 14,
     fontFamily: "Times-Bold",
-    marginTop: 14,
-    marginBottom: 8,
-  },
-  heading2: {
-    fontSize: 13,
-    fontFamily: "Times-Bold",
-    marginTop: 10,
+    textAlign: "left",            // §6: section headings left-aligned
+    lineHeight: 1,                // §5: headings single spacing
+    marginTop: 18,                // one blank line before
     marginBottom: 6,
   },
+
+  // Sub-heading (1.1.1): 12 pt Bold left-aligned, single spacing
+  heading2: {
+    fontSize: 12,
+    fontFamily: "Times-Bold",
+    textAlign: "left",            // §6: section headings left-aligned
+    lineHeight: 1,                // §5: headings single spacing
+    marginTop: 12,
+    marginBottom: 6,
+  },
+
+  // Normal text: 12 pt Regular, justified, 1.5 line spacing
+  // First-line indent: 0.5 inch = 36 pt  (§7)
+  // 6 pt after paragraph + ~12 pt blank line = 18 pt total bottom margin (§7)
   paragraph: {
     fontSize: 12,
-    lineHeight: 1.6,
-    textAlign: "justify",
-    marginBottom: 10,
-    marginLeft: 36,
+    fontFamily: "Times-Roman",
+    lineHeight: 1.5,              // §5: 1.5 line spacing
+    textAlign: "justify",         // §6: normal text justified
+    textIndent: 36,               // §7: 0.5 inch first-line indent
+    marginBottom: 18,             // §7: 6 pt after + one blank line
   },
+
+  // List items: 12 pt Regular, 1.5 spacing, justified, indented
   listItem: {
     fontSize: 12,
+    fontFamily: "Times-Roman",
     lineHeight: 1.5,
-    marginBottom: 4,
-    marginLeft: 48,
+    marginBottom: 6,
+    marginLeft: 36,               // align with paragraph indent
     flexDirection: "row",
   },
   listBullet: {
-    width: 14,
+    width: 16,
     fontSize: 12,
+    fontFamily: "Times-Roman",
   },
   listText: {
     flex: 1,
     fontSize: 12,
+    fontFamily: "Times-Roman",
     lineHeight: 1.5,
+    textAlign: "justify",
   },
+
+  // Code: Courier New 10 pt (§12: Java code, Courier New, 10–11 pt)
   codeBlock: {
-    fontFamily: "Courier",
-    fontSize: 10,
+    fontFamily: "Courier",        // react-pdf built-in Courier = Courier New
+    fontSize: 10,                 // §12: 10 or 11 pt
+    lineHeight: 1.3,
     backgroundColor: "#f8fafc",
     padding: 10,
-    borderRadius: 4,
-    marginLeft: 36,
-    marginBottom: 12,
-    // react-pdf doesn't support border shorthand, use individual sides:
+    marginBottom: 18,
     borderLeftWidth: 1,
-    borderLeftColor: "#e2e8f0",
+    borderLeftColor: "#cccccc",
     borderLeftStyle: "solid",
     borderRightWidth: 1,
-    borderRightColor: "#e2e8f0",
+    borderRightColor: "#cccccc",
     borderRightStyle: "solid",
     borderTopWidth: 1,
-    borderTopColor: "#e2e8f0",
+    borderTopColor: "#cccccc",
     borderTopStyle: "solid",
     borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
+    borderBottomColor: "#cccccc",
     borderBottomStyle: "solid",
   },
+
+  // Images / screenshots (§11)
   imageWrapper: {
     alignItems: "center",
     marginVertical: 16,
@@ -218,12 +290,22 @@ const s = StyleSheet.create({
     maxHeight: 300,
     objectFit: "contain",
   },
+  // Figure caption: 11 pt Bold Italic center (§4 + §11)
   imageCaption: {
     fontSize: 11,
-    fontFamily: "Times-Italic",
-    marginTop: 6,
-    color: "#4b5563",
+    fontFamily: "Times-BoldItalic",
     textAlign: "center",
+    marginTop: 6,
+    marginBottom: 12,
+  },
+
+  // Table title: 12 pt Bold center (§4 + §10)
+  tableTitle: {
+    fontSize: 12,
+    fontFamily: "Times-Bold",
+    textAlign: "center",
+    marginBottom: 6,
+    marginTop: 12,
   },
 });
 
@@ -400,10 +482,14 @@ const BodyPages = ({ blocks }) => {
           return null;
         })}
 
-        {/* Page number */}
+        {/* Page number – Arabic numerals for body chapters (§9) */}
         <Text
           style={s.pageNumber}
-          render={({ pageNumber }) => `${pageNumber}`}
+          render={({ pageNumber, totalPages }) =>
+            // pageNumber here is absolute; body starts at page 3 (cover=1, toc=2)
+            // so body page 1 = absolute page 3 → subtract 2
+            String(pageNumber - 2)
+          }
           fixed
         />
       </Page>
