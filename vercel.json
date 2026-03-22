@@ -1,4 +1,0 @@
-{
-  "buildCommand": "cd doc-generator && npm install && npm run build",
-  "outputDirectory": "doc-generator/dist"
-}
