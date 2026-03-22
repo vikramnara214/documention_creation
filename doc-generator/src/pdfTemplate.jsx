@@ -232,7 +232,6 @@ const s = StyleSheet.create({
     fontFamily: "Times-Roman",
     lineHeight: 1.5,              // §5: 1.5 line spacing
     textAlign: "justify",         // §6: normal text justified
-    textIndent: 36,               // §7: 0.5 inch first-line indent
     marginBottom: 18,             // §7: 6 pt after + one blank line
   },
 

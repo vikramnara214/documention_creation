@@ -176,7 +176,6 @@ body {
   font-size: 12pt;
   margin-bottom: 6pt; /* Guideline rule 7: 6pt after paragraph */
   text-align: justify;
-  text-indent: 0.5in; /* Guideline rule 7: first line indent */
   white-space: pre-line; /* preserves newlines from textarea */
 }
 
