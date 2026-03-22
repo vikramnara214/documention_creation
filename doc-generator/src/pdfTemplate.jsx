@@ -382,119 +382,121 @@ const TocPage = ({ blocks }) => {
   );
 };
 
-// ─── Body: one Page per Chapter ─────────────────────────────────────────────
+// ─── Body: single flowing Page – react-pdf handles overflow automatically ────
+//
+// KEY FIX: Do NOT create one <Page> per chapter. Instead render ALL blocks
+// inside ONE <Page> with `wrap` enabled (the default). react-pdf will insert
+// real page breaks whenever content overflows the physical page height.
+//
+// §8 "each chapter starts on a new page" is achieved with
+//   break="before"  on the chapter-title <View>, which is the react-pdf way
+//   to say "always start this element on a fresh page".
+//
 const BodyPages = ({ blocks }) => {
-  // Group blocks: split on every "chapter" block (new page per chapter)
-  const groups = [];
-  let current = [];
+  const cnt = { ch: 0, h1: 0, h2: 0 };
 
-  (blocks || []).forEach((b) => {
-    if ((b.type === "chapter" || b.type === "page_break") && current.length > 0) {
-      groups.push(current);
-      current = [];
-    }
-    current.push(b);
-  });
-  if (current.length > 0) groups.push(current);
+  return (
+    <Page size="A4" style={s.page} wrap>
 
-  return groups.map((group, gIdx) => {
-    const cnt = { ch: gIdx, h1: 0, h2: 0 }; // ch starts at group index
+      {/* Arabic page numbers – auto-incremented by react-pdf (§9)          */}
+      {/* Offset by -2 because cover=page1, toc=page2, body starts at 3     */}
+      <Text
+        style={s.pageNumber}
+        render={({ pageNumber }) => String(pageNumber - 2)}
+        fixed
+      />
 
-    // Re-derive correct chapter number by scanning all previous groups
-    const allBlocks = blocks || [];
-    const chaptersSoFar = allBlocks
-      .slice(0, allBlocks.indexOf(group[0]))
-      .filter((b) => b.type === "chapter").length;
-    cnt.ch = chaptersSoFar;
+      {(blocks || []).map((b) => {
+        const label = getLabel(b, cnt);
 
-    return (
-      <Page key={gIdx} size="A4" style={s.page}>
-        {group.map((b) => {
-          const label = getLabel(b, cnt);
-
-          if (b.type === "chapter") {
-            return (
-              <Text key={b.id} style={s.chapterTitle}>
+        // ── Chapter title ──────────────────────────────────────────────────
+        // break="before" forces a new page before every chapter (§8).
+        // The first chapter gets break="before" too – react-pdf ignores it
+        // when the element is already at the very top of the first page.
+        if (b.type === "chapter") {
+          return (
+            <View key={b.id} break>
+              <Text style={s.chapterTitle}>
                 {label}. {b.title}
               </Text>
-            );
-          }
+            </View>
+          );
+        }
 
-          if (b.type === "heading1") {
-            return (
-              <Text key={b.id} style={s.heading1}>
-                {label} {b.title}
-              </Text>
-            );
-          }
+        if (b.type === "page_break") {
+          return <View key={b.id} break />;
+        }
 
-          if (b.type === "heading2") {
-            return (
-              <Text key={b.id} style={s.heading2}>
-                {label} {b.title}
-              </Text>
-            );
-          }
+        // ── Main heading (1.1) ─────────────────────────────────────────────
+        // wrap={false} keeps heading glued to the content that follows it.
+        if (b.type === "heading1") {
+          return (
+            <Text key={b.id} style={s.heading1} wrap={false}>
+              {label} {b.title}
+            </Text>
+          );
+        }
 
-          if (b.type === "paragraph") {
-            return (
-              <Text key={b.id} style={s.paragraph}>
-                {b.content}
-              </Text>
-            );
-          }
+        // ── Sub-heading (1.1.1) ────────────────────────────────────────────
+        if (b.type === "heading2") {
+          return (
+            <Text key={b.id} style={s.heading2} wrap={false}>
+              {label} {b.title}
+            </Text>
+          );
+        }
 
-          if (b.type === "list") {
-            return (
-              <View key={b.id}>
-                {(b.content || "")
-                  .split("\n")
-                  .filter((l) => l.trim())
-                  .map((line, li) => (
-                    <View key={li} style={s.listItem}>
-                      <Text style={s.listBullet}>•</Text>
-                      <Text style={s.listText}>{line}</Text>
-                    </View>
-                  ))}
-              </View>
-            );
-          }
+        // ── Paragraph ──────────────────────────────────────────────────────
+        if (b.type === "paragraph") {
+          return (
+            <Text key={b.id} style={s.paragraph}>
+              {b.content}
+            </Text>
+          );
+        }
 
-          if (b.type === "code") {
-            return (
-              <Text key={b.id} style={s.codeBlock}>
-                {b.content}
-              </Text>
-            );
-          }
+        // ── Bullet list ────────────────────────────────────────────────────
+        if (b.type === "list") {
+          return (
+            <View key={b.id}>
+              {(b.content || "")
+                .split("\n")
+                .filter((l) => l.trim())
+                .map((line, li) => (
+                  <View key={li} style={s.listItem} wrap={false}>
+                    <Text style={s.listBullet}>•</Text>
+                    <Text style={s.listText}>{line}</Text>
+                  </View>
+                ))}
+            </View>
+          );
+        }
 
-          if (b.type === "image" && b.src) {
-            return (
-              <View key={b.id} style={s.imageWrapper}>
-                <Image src={b.src} style={s.image} />
-                {b.title ? (
-                  <Text style={s.imageCaption}>{b.title}</Text>
-                ) : null}
-              </View>
-            );
-          }
+        // ── Code block ─────────────────────────────────────────────────────
+        if (b.type === "code") {
+          return (
+            <Text key={b.id} style={s.codeBlock}>
+              {b.content}
+            </Text>
+          );
+        }
 
-          return null;
-        })}
+        // ── Image / screenshot ─────────────────────────────────────────────
+        if (b.type === "image" && b.src) {
+          return (
+            <View key={b.id} style={s.imageWrapper} wrap={false}>
+              <Image src={b.src} style={s.image} />
+              {b.title ? (
+                <Text style={s.imageCaption}>{b.title}</Text>
+              ) : null}
+            </View>
+          );
+        }
 
-        {/* Page number – Arabic numerals for body chapters (§9) */}
-        <Text
-          style={s.pageNumber}
-          render={({ pageNumber, totalPages }) =>
-            // pageNumber here is absolute; body starts at page 3 (cover=1, toc=2)
-            // so body page 1 = absolute page 3 → subtract 2
-            String(pageNumber - 2)
-          }
-          fixed
-        />
-      </Page>
-    );
-  });
+        return null;
+      })}
+    </Page>
+  );
 };
 
 // ─── Root Document export ─────────────────────────────────────────────────────
