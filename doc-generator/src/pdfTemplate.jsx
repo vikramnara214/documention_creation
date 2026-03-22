@@ -389,7 +389,7 @@ const BodyPages = ({ blocks }) => {
   let current = [];
 
   (blocks || []).forEach((b) => {
-    if (b.type === "chapter" && current.length > 0) {
+    if ((b.type === "chapter" || b.type === "page_break") && current.length > 0) {
       groups.push(current);
       current = [];
     }

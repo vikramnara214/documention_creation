@@ -342,6 +342,12 @@ export default function App() {
                     <input className="field-input" style={{ fontSize: "0.82rem", padding: "6px 8px" }} value={b.title} onChange={(e) => updateBlock(b.id, "title", e.target.value)} placeholder="Figure Caption" />
                   </div>
                 )}
+
+                {b.type === "page_break" && (
+                  <div style={{ padding: "8px", background: "#f8fafc", border: "1px dashed #e2e8f0", borderRadius: 6, textAlign: "center", fontSize: "0.78rem", color: "#64748b" }}>
+                    --- Page Break ---
+                  </div>
+                )}
               </div>
                 );
               });
@@ -359,6 +365,7 @@ export default function App() {
           <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }} onClick={() => addBlock("list")}>+ List</button>
           <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#d1fae5", color: "#059669", border: "1px solid #a7f3d0" }} onClick={() => addBlock("image")}>+ Photo</button>
           <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#fef08a", color: "#854d0e", border: "1px solid #fde047" }} onClick={() => addBlock("code")}>+ Code</button>
+          <button className="btn-primary" style={{ padding: "6px 8px", fontSize: "0.75rem", background: "#e0e7ff", color: "#4338ca", border: "1px solid #c7d2fe" }} onClick={() => addBlock("page_break")}>+ Break</button>
         </div>
 
         {/* Credits */}
@@ -478,7 +485,7 @@ export default function App() {
           (data.blocks || []).forEach((b) => {
             const label = getNumberedLabel(b, pCnt);
             
-            if (b.type === "chapter" && currentBlocks.length > 0) {
+            if ((b.type === "chapter" || b.type === "page_break") && currentBlocks.length > 0) {
               pages.push(
                 <div className="paper-sheet" style={{ textAlign: "left", position: "relative" }} key={`page-${pCnt.ch}`}>
                   {currentBlocks}
@@ -490,6 +497,7 @@ export default function App() {
 
             currentBlocks.push(
               <div key={b.id}>
+                {b.type === "page_break" && <div style={{ borderTop: "2px dashed #94a3b8", margin: "20px 0", textAlign: "center", color: "#64748b", fontSize: "0.75rem", letterSpacing: "1px" }}>--- PAGE BREAK ---</div>}
                 {b.type === "chapter" && <div className="doc-chapter">{label}. {b.title}</div>}
                 {b.type === "heading1" && <div className="doc-h1">{label} {b.title}</div>}
                 {b.type === "heading2" && <div className="doc-h2">{label} {b.title}</div>}
